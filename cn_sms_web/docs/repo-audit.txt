@@ -1,0 +1,37 @@
+CNSMS Repository Audit Summary
+================================
+
+A. FILES FOUND
+- Total Files: ~35
+- Key Dirs: app/, tests/, docs/, instance/, migrations/
+- Entry Point: app.py
+- Framework: Flask 3.0.0
+- Database: SQLite (via SQLAlchemy)
+
+B. API ENDPOINTS DISCOVERED
+[POST] /api/login (Auth)
+[GET]  /api/incidents (List incidents)
+[POST] /api/incidents (Report incident + Image)
+[POST] /api/incidents/analyze (AI Analysis)
+[PATCH] /api/incidents/<id>/status (Update Status)
+[GET]  /api/status (Health Check)
+
+C. MODELS DISCOVERED
+- User (Auth)
+- Incident (Core Data)
+- AuditLog (Security)
+- MapNode (Navigation)
+- MapEdge (Navigation)
+- Room, Booking (Ext. Features)
+
+D. MISSING ITEMS
+- Real AI implementation (Currently Mock)
+- SMTP Email configuration (Currently Log-only)
+- Production WSGI config (Gunicorn/Nginx)
+- Detailed specific tests for map logic
+
+E. RUN COMMANDS
+- Install: pip install -r requirements.txt
+- Init DB: python db_init.py && python seed.py
+- Run Dev: python app.py
+- Test:    pytest

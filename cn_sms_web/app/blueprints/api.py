@@ -368,3 +368,56 @@ def update_incident_status(incident_id):
         'incident_id': incident_id,
         'status': new_status
     })
+
+
+# --- Map Node API ---
+
+@api_bp.route('/map/nodes', methods=['GET'])
+@auth_required
+def get_map_nodes():
+    """Get all map nodes."""
+    from app.models import MapNode
+    nodes = MapNode.query.all()
+    results = [{'id': n.id, 'name': n.name, 'x': n.x, 'y': n.y, 'desc': n.description} for n in nodes]
+    return jsonify({'nodes': results})
+
+
+@api_bp.route('/map/nodes', methods=['POST'])
+@auth_required
+def create_map_node():
+    """Create a new map node."""
+    from app.models import MapNode
+    data = request.get_json() or {}
+    
+    if not data.get('name') or 'x' not in data or 'y' not in data:
+        return jsonify({'error': 'Missing name, x, or y'}), 400
+        
+    node = MapNode(
+        name=data['name'],
+        x=float(data['x']),
+        y=float(data['y']),
+        description=data.get('description', ''),
+        node_type=data.get('type', 'general')
+    )
+    db.session.add(node)
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Node created',
+        'id': node.id,
+        'node': {'id': node.id, 'name': node.name, 'x': node.x, 'y': node.y}
+    }), 201
+
+
+@api_bp.route('/map/nodes/<int:node_id>', methods=['DELETE'])
+@auth_required
+def delete_map_node(node_id):
+    """Delete a map node."""
+    from app.models import MapNode
+    node = MapNode.query.get(node_id)
+    if not node:
+        return jsonify({'error': 'Node not found'}), 404
+        
+    db.session.delete(node)
+    db.session.commit()
+    return jsonify({'message': 'Node deleted'})

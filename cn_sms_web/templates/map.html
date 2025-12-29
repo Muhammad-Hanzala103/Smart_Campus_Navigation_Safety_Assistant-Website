@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Map Intelligence - CIIAS{% endblock %}
+{% block title %}Map Intelligence - KICSIT{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -225,16 +225,21 @@
 <script src="https://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
 
 <script>
-    // Initialize Map
-    const BASE_LAT = 37.8715;
-    const BASE_LNG = -122.2595;
+    // Initialize Map - KICSIT, Kahuta
+    const BASE_LAT = 33.6515;
+    const BASE_LNG = 73.1565;
     const SCALE = 0.0001;
 
-    const map = L.map('map').setView([BASE_LAT + 0.005, BASE_LNG + 0.005], 16);
+    // Center strict on KICSIT
+    const map = L.map('map').setView([BASE_LAT, BASE_LNG], 17);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
     }).addTo(map);
+
+    // KICSIT Marker
+    L.marker([BASE_LAT, BASE_LNG]).addTo(map)
+        .bindPopup("<b>KICSIT Campus</b><br>Dr. A. Q. Khan Institute").openPopup();
 
     let heatLayer;
     let markersLayer = L.layerGroup().addTo(map);
