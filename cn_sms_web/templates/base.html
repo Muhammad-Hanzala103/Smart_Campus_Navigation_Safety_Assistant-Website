@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CIIAS - Campus Intelligence{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+    {% if current_user.is_authenticated %}
+    <header>
+        <div
+            style="display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto;">
+            <div>
+                <span class="brand">CIIAS</span>
+                <nav>
+                    <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+                    <a href="{{ url_for('dashboard.incidents') }}">Incidents</a>
+                    <a href="{{ url_for('dashboard.map_view') }}">Map Intelligence</a>
+                    <a href="{{ url_for('dashboard.system_status') }}">System Status</a>
+                </nav>
+            </div>
+            <div>
+                <span style="color: rgba(255,255,255,0.7); margin-right: 1rem;">{{ current_user.full_name }}</span>
+                <a href="{{ url_for('auth.logout') }}"
+                    style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 6px;">Logout</a>
+            </div>
+        </div>
+    </header>
+    {% endif %}
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

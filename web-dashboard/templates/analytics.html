@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Analytics</h2>
+<div class="dashboard-grid">
+    <div class="stat-card">
+        <h3>Incidents by Category</h3>
+        <canvas id="chart-incidents"></canvas>
+    </div>
+    <div class="stat-card">
+        <h3>Bookings by Status</h3>
+        <canvas id="chart-bookings"></canvas>
+    </div>
+</div>
+{% endblock %}

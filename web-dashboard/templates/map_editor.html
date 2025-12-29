@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Map Editor</h2>
+<div class="map-wrapper" id="map-container">
+    <img src="/static/img/map.svg" id="map-image">
+    <!-- Nodes will be overlaid here -->
+</div>
+
+<!-- Node Modal -->
+<div id="node-modal" class="modal">
+    <div class="modal-content">
+        <span onclick="closeModal('node-modal')" class="close">&times;</span>
+        <h3>Edit Node</h3>
+        <form id="node-form">
+            <input type="hidden" id="n-id">
+            <input type="hidden" id="n-x">
+            <input type="hidden" id="n-y">
+            <input type="text" id="n-name" placeholder="Name" required>
+            <input type="text" id="n-desc" placeholder="Description">
+            <button type="submit">Save</button>
+            <button type="button" onclick="deleteNode()" class="btn-danger">Delete</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

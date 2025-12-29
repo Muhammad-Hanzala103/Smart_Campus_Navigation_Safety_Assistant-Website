@@ -1,0 +1,23 @@
+<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+ <rect x="0" y="0" width="800" height="600" fill="#ecf0f1" />
+ <!-- Roads -->
+ <path d="M 100 500 L 200 400 L 300 300 L 400 200 L 450 250" stroke="#bdc3c7" stroke-width="20" fill="none"/>
+ <path d="M 300 300 L 500 500" stroke="#bdc3c7" stroke-width="20" fill="none"/>
+ <path d="M 400 200 L 600 100" stroke="#bdc3c7" stroke-width="20" fill="none"/>
+ 
+ <!-- Areas -->
+ <rect x="150" y="350" width="100" height="100" fill="#95a5a6" opacity="0.3" rx="10"/>
+ <text x="160" y="370" fill="#7f8c8d" font-family="Arial" font-size="14">Admin Block</text>
+
+ <circle cx="300" cy="300" r="50" fill="#95a5a6" opacity="0.3"/>
+ <text x="270" y="305" fill="#7f8c8d" font-family="Arial" font-size="14">Library Zone</text>
+
+ <rect x="550" y="50" width="100" height="100" fill="#2ecc71" opacity="0.2" rx="10"/>
+ <text x="560" y="70" fill="#27ae60" font-family="Arial" font-size="14">Sports Ground</text>
+ 
+ <rect x="380" y="180" width="120" height="100" fill="#3498db" opacity="0.2" rx="5"/>
+ <text x="390" y="195" fill="#2980b9" font-family="Arial" font-size="14">Labs</text>
+
+ <!-- Campus Boundary -->
+ <rect x="10" y="10" width="780" height="580" fill="none" stroke="#7f8c8d" stroke-width="5" stroke-dasharray="20,10"/>
+</svg>

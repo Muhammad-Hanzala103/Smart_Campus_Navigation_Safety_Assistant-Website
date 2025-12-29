@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}System Status - CIIAS{% endblock %}
+
+{% block content %}
+<div class="status-page">
+    <div class="page-header">
+        <h1>System Status</h1>
+        <p class="subtitle">Real-time system health and monitoring</p>
+    </div>
+
+    <div class="status-grid">
+        <!-- API Status -->
+        <div class="status-card">
+            <div class="status-header">
+                <h3>🔌 API Server</h3>
+                <span class="status-indicator online" id="api-status">Checking...</span>
+            </div>
+            <div class="status-details" id="api-details">
+                <p>Endpoint: /api/status</p>
+            </div>
+        </div>
+
+        <!-- Database Status -->
+        <div class="status-card">
+            <div class="status-header">
+                <h3>🗄️ Database</h3>
+                <span class="status-indicator online">Online</span>
+            </div>
+            <div class="status-details">
+                <p>SQLite / Connected</p>
+            </div>
+        </div>
+
+        <!-- AI Service -->
+        <div class="status-card">
+            <div class="status-header">
+                <h3>🤖 AI Service</h3>
+                <span class="status-indicator" id="ai-status">Checking...</span>
+            </div>
+            <div class="status-details" id="ai-details">
+                <p>Mode: Loading...</p>
+            </div>
+        </div>
+
+        <!-- Auth Service -->
+        <div class="status-card">
+            <div class="status-header">
+                <h3>🔐 Authentication</h3>
+                <span class="status-indicator online">Active</span>
+            </div>
+            <div class="status-details">
+                <p>JWT / Session Active</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-info">
+        <div class="card">
+            <div class="card-header">
+                <h2>System Information</h2>
+            </div>
+            <div class="card-body">
+                <table class="info-table">
+                    <tr>
+                        <td>Version</td>
+                        <td id="sys-version">1.0.0</td>
+                    </tr>
+                    <tr>
+                        <td>Environment</td>
+                        <td>Development</td>
+                    </tr>
+                    <tr>
+                        <td>Server Time</td>
+                        <td id="server-time">--</td>
+                    </tr>
+                    <tr>
+                        <td>Uptime</td>
+                        <td>Active</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .status-page {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+        color: var(--text-secondary);
+    }
+
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .status-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid var(--border);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .status-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .status-header h3 {
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .status-indicator {
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-indicator.online {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-indicator.offline {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-indicator.warning {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .status-details {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+
+    .status-info {
+        max-width: 600px;
+    }
+
+    .info-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .info-table td {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .info-table td:first-child {
+        font-weight: 500;
+        color: var(--text-secondary);
+        width: 40%;
+    }
+</style>
+
+<script>
+    async function checkApiStatus() {
+        try {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+
+            document.getElementById('api-status').textContent = 'Online';
+            document.getElementById('api-status').className = 'status-indicator online';
+            document.getElementById('api-details').innerHTML = `<p>Response: ${res.status} OK</p>`;
+
+            document.getElementById('ai-status').textContent = data.ai_mode === 'mock' ? 'Mock Mode' : 'Active';
+            document.getElementById('ai-status').className = 'status-indicator ' + (data.ai_mode === 'mock' ? 'warning' : 'online');
+            document.getElementById('ai-details').innerHTML = `<p>Mode: ${data.ai_mode.toUpperCase()}</p>`;
+
+            document.getElementById('sys-version').textContent = data.version || '1.0.0';
+            document.getElementById('server-time').textContent = new Date(data.timestamp).toLocaleString();
+        } catch (e) {
+            document.getElementById('api-status').textContent = 'Error';
+            document.getElementById('api-status').className = 'status-indicator offline';
+        }
+    }
+
+    checkApiStatus();
+    setInterval(checkApiStatus, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Create Account - CIIAS{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-brand">
+            <div class="brand-logo">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="48" height="48" rx="12" fill="#1e40af" />
+                    <path d="M24 14L34 20V28C34 33 29 36 24 38C19 36 14 33 14 28V20L24 14Z" stroke="white"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M24 24L20 26V30L24 32L28 30V26L24 24Z" fill="white" />
+                </svg>
+            </div>
+            <h1>CIIAS</h1>
+            <p>Create your account</p>
+        </div>
+
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Register</h2>
+                <p>Join the Campus Intelligence System</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.register') }}" class="auth-form">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" placeholder="John Doe" required autocomplete="name">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" placeholder="your.email@university.edu" required
+                        autocomplete="email">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="••••••••" required minlength="6"
+                        autocomplete="new-password">
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" placeholder="••••••••" required
+                        minlength="6" autocomplete="new-password">
+                </div>
+
+                <button type="submit" class="btn-primary full-width">Create Account</button>
+            </form>
+
+            <div class="auth-footer">
+                <div class="auth-links">
+                    <span>Already have an account?</span>
+                    <a href="{{ url_for('auth.login') }}" class="auth-link">Sign In</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-page {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem;
+    }
+
+    .auth-container {
+        max-width: 450px;
+        width: 100%;
+    }
+
+    .auth-brand {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-brand h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-brand p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.95rem;
+    }
+
+    .auth-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    }
+
+    .auth-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .auth-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+    }
+
+    .auth-header p {
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+
+    .auth-form {
+        margin-bottom: 1.5rem;
+    }
+
+    .auth-footer {
+        padding-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+        text-align: center;
+    }
+
+    .auth-links {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .auth-link {
+        color: #1e40af;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .auth-link:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}

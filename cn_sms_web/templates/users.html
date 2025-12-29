@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>User Directory</h1>
+<table id="users-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>Role</th>
+        </tr>
+    </thead>
+    <tbody id="users-body"></tbody>
+</table>
+<script>
+    async function loadUsers() {
+        const users = await apiCall('/api/users');
+        document.getElementById('users-body').innerHTML = users.map(u => `
+        <tr><td>${u.id}</td><td>${u.email}</td><td>${u.role}</td></tr>
+    `).join('');
+    }
+</script>
+{% endblock %}

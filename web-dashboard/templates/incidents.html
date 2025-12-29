@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Incidents</h2>
+<button onclick="openModal('incident-modal')" class="btn">Report New Incident</button>
+
+<table>
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Image</th>
+        </tr>
+    </thead>
+    <tbody id="incidents-body"></tbody>
+</table>
+
+<!-- Incident Modal -->
+<div id="incident-modal" class="modal">
+    <div class="modal-content">
+        <span onclick="closeModal('incident-modal')" class="close">&times;</span>
+        <h3>Report Incident</h3>
+        <form id="incident-form">
+            <select name="category">
+                <option value="Maintenance">Maintenance</option>
+                <option value="Security">Security</option>
+                <option value="Health">Health</option>
+            </select>
+            <textarea name="description" placeholder="Description" required></textarea>
+            <input type="text" name="x" placeholder="X Coord (Optional)" value="100">
+            <input type="text" name="y" placeholder="Y Coord (Optional)" value="100">
+            <input type="file" name="image" accept="image/*">
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
