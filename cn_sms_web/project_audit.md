@@ -1,78 +1,175 @@
-# CNSMS Project Audit
+# CNSMS Project Audit & Analysis Report
 
-**Project**: Campus Navigation and Safety Management System (CNSMS)
-**Team**: Muhammad Hanzala, Haseeb Nawaz, [Third Member]
+**Project Type:** Flask (Python) Web Application + Android Backend API
+**Role:** Campus Navigation and Safety Management System (CNSMS)
+**Auditor**: AI Analysis Assistant
 **Date**: December 29, 2025
 
 ---
 
-## 1. Executive Summary
-The CNSMS web application is a Flask-based backend with a Jinja2 frontend, designed to manage campus safety incidents. It features a hybrid authentication system (JWT for Android, Sessions for Web), an AI-powered incident analyzer (currently stubbed), and a SQLite database. The project structure is modular (Blueprints) and follows good separation of concerns.
+## 1. Project Overview
 
-**Status**: Alpha/Beta. Core features work, but UI polish and AI integration are in early stages.
-**Critical Issues**: None blocking.
-**Next Steps**: Polish UI, integrate real AI model, and finalize deployment.
+### What is this project?
+This is a **Safety & Navigation Management System** built with **Flask (Python)**.
+It serves two main purposes:
+1.  **Web Dashboard**: For administrators/officers to view incidents, see a heatmap of dangers, and manage the system.
+2.  **Android Backend API**: Provides data (incidents, authentication, map logic) to a mobile app (Android).
 
----
+**Core Problem Solved**:  
+Helping campus security track incidents (theft, fire, medical questions) in real-time and providing students with a way to report them.
 
-## 2. Architecture & Tech Stack
-- **Backend Framework**: Flask 3.0.0
-- **Database**: SQLite (SQLAlchemy ORM)
-- **Authentication**: Flask-Login (Web) + PyJWT (Android API)
-- **AI Engine**: Modular Service Pattern (`ai_service.py` -> `ai_analyzer.py`)
-- **Frontend**: HTML5, Bootstrap 5 (CDN), Jinja2 Templating
-- **API**: RESTful JSON API (`/api/*`)
+**Users**:
+- **Students (Mobile)**: Report incidents, view map.
+- **Security Officers (Web)**: view dashboard, update incident status.
+- **Admins (Web)**: Manage users and system health.
 
-### Key Components
-- `app/blueprints/auth.py`: Web Authentication
-- `app/blueprints/api.py`: Core REST API
-- `app/models.py`: Database Schema
-- `app/services/ai_service.py`: AI Logic
-
----
-
-## 3. Database Schema
-Verified via `app/models.py`.
-
-| Table | key Columns | Purpose |
-|-------|-------------|---------|
-| `User` | id, email, password_hash, role | User management |
-| `Incident` | id, user_id, status, ai_severity, image_path | Core incident tracking |
-| `MapNode` | id, name, x, y, node_type | Navigation graph nodes |
-| `AuditLog` | id, user_id, action, ip_address | Security tracking |
+**System Flow**:
+1.  User (Mobile/Web) **Reports Incident** (Description + Photo).
+2.  Backend **Analyzes Image** (AI Service) -> Assigns Severity (High/Low).
+3.  Admin **Reviews** on Dashboard -> Updates Status (Resolved).
+4.  User sees **Update** on their device.
 
 ---
 
-## 4. API Endpoints
-See `api_spec.md` for full details.
-- **Auth**: `/api/register`, `/api/login`
-- **Incidents**: `/api/incidents` (GET/POST), `/api/incidents/analyze`
-- **System**: `/api/status`
+## 2. Folder & File Explanation
+
+### Root Directory `cn_sms_web/`
+| File / Folder | Purpose |
+|:---|:---|
+| `app.py` | **Entry Point**. Starts the Flask server. Binds to `0.0.0.0:5000`. |
+| `config.py` | **Settings**. Database URL, Secret Keys, Upload folder paths. |
+| `models.py` | **Database Schema**. Defines Tables: `User`, `Incident`, `AuditLog`. |
+| `db_init.py` | **Setup Script**. Creates the SQLite database file (`instance/cnsms.db`). |
+| `seed.py` | **Demo Data**. Fills the database with fake users and incidents for testing. |
+| `requirements.txt` | **Dependencies**. Lists Python libraries needed (Flask, SQLAlchemy, PyJWT). |
+
+### App Logic `app/`
+| File / Folder | Purpose |
+|:---|:---|
+| `__init__.py` | **App Factory**. Initializes Flask, DB, LoginManager, and CORS. |
+| `blueprints/` | **Routes**. Groups code by feature: `auth` (web login), `api` (mobile data), `dashboard` (web UI). |
+| `services/` | **Business Logic**. `ai_service.py` handles image analysis logic. `email_service.py` handles reset emails. |
+| `utils/` | **Helpers**. `jwt_auth.py` (API security), `validators.py` (data checking). |
+
+### Frontend `templates/` & `static/`
+- **templates/**: HTML files (Jinja2). `base.html` (layout), `login.html`, `dashboard.html`.
+- **static/**: CSS (Styles), JS (Scripts), Uploads (Images).
 
 ---
 
-## 5. Test Coverage
-- **Unit Tests**: Generic logic coverage in `tests/`.
-- **Status**: [Use tests/results.txt content here]
+## 3. Backend Logic (Detailed)
+
+### Authentication Flow
+The system uses a **Hybrid Auth** approach:
+1.  **Web Browsers**: Use **Sessions** (`Flask-Login`).
+    - Login: `POST /login` -> Validates password -> Sets `session` cookie.
+    - Access: Middleware checks `current_user.is_authenticated`.
+2.  **Mobile Apps**: Use **JWT Tokens** (`PyJWT`).
+    - Login: `POST /api/login` -> Returns `{ "token": "ey..." }`.
+    - Access: Android sends header `Authorization: Bearer <token>`.
+    - Middleware: `@auth_required` decodes token -> Sets `g.current_user`.
+
+### Key API Endpoints
+- **GET /api/incidents**: Returns list of incidents (JSON).
+- **POST /api/incidents**: Upload incident (Multipart: text + image).
+- **POST /api/login**: Get JWT Token.
+- **GET /api/status**: Health check (online/offline).
+
+### Data Flow Example (Incident Reporting)
+1.  **Frontend**: Sends `POST /api/incidents` with image.
+2.  **Backend**:
+    - Validates file type.
+    - Saves image to `static/uploads`.
+    - Calls `ai_service.analyze_image()` -> Returns "High Risk".
+    - Saves properties to `Incident` table (DB).
+3.  **Response**: Returns `201 Created` with new Incident ID.
 
 ---
 
-## 6. Security & HCI Audit
-### Security Findings
-1.  **Secret Management**: `.env` is used, but ensure `.env.example` does not contain real secrets.
-2.  **Input Validation**: Implemented via `app/utils/validators.py`.
-3.  **CORS**: Configured for `*` (All origins). **Fix**: Restrict to specific app domains in production.
-4.  **Passwords**: Hashed with Werkzeug (good).
+## 4. Database & Data Flow
+**Database Engine**: **SQLite** (File-based).
+**File Location**: `instance/cnsms.db`.
 
-### HCI Findings
-1.  **Mobile**: Frontend is responsive (Bootstrap), but map interaction on mobile web needs testing.
-2.  **Feedback**: "Toast" notifications used for actions (good).
-3.  **Accessibility**: Color contrast on "System Status" page needs check.
+### Key Tables
+1.  **User**: `id, email, password_hash, role`.
+2.  **Incident**: `id, description, image_path, status, ai_severity`.
+3.  **AuditLog**: `id, action ("LOGIN_FAILED"), timestamp`.
+
+**Data Lifecycle**:
+User Input -> API Validation -> ORM Object (Python) -> SQL INSERT -> SQLite File.
 
 ---
 
-## 7. Next Steps & TODO
-See `todo_tasks.md` for team assignments.
-1.  Verify Android App connection (Completed).
-2.  Run `quick_run.sh` to ensure fresh install works.
-3.  Deploy to staging (e.g., Render/Heroku) for final presentation.
+## 5. Frontend Behavior
+- **Dashboard**: Shows charts (Chart.js) of incidents by category.
+- **Map**: Uses Leaflet.js to show pins on a floorplan image.
+- **Login/Register**: Standard HTML forms.
+- **System Status**: Real-time fetch from `/api/status`.
+
+**API Calls in Frontend**:
+- Unlike typical "Single Page Apps", this app renders HTML on server.
+- **But**, the Map and Status pages use `fetch('/api/...')` to get live data dynamically to avoid page reloads.
+
+---
+
+## 6. AI Implementation
+**Status**: **Stubbed / Mock**.
+- **File**: `app/services/ai_analyzer.py`
+- **Current Logic**:
+  - The code is set to **Mock Mode**.
+  - It does **not** call HuggingFace or OpenAI.
+  - It generates **random** severity (Low/High) for demo purposes.
+- **Input**: Accepts image bytes.
+- **Result**: Returns JSON `{ "severity": "HIGH", "confidence": 0.88 }`.
+- **UI**: Shows "AI Analysis Result" badge on Incident details page.
+
+**Honest Assessment**: The AI "plumbing" is there, but the "brain" is random for now (which is fine for a demo).
+
+---
+
+## 7. Complete vs Incomplete
+
+### ✅ Working Features
+- Login / Register / Forgot Password (Web + API).
+- Dashboard with Charts.
+- Incident Reporting (Upload + Save).
+- System Status Page.
+- Map Page (Markers load).
+- Android Connection (CORS + Host 0.0.0.0).
+
+### ⚠️ Incomplete / Missing
+- **Real AI**: Currently using random mock data.
+- **Detailed Map Editor**: `map_editor.html` exists but is basic.
+- **User Profile Edit**: API exists (`GET /me`), but no Web UI to edit profile.
+- **Email Sending**: Forgot Password generates token in logs (Dev mode), doesn't actually send SMTP email (Production).
+
+---
+
+## 8. Common Errors & Weak Points
+
+1.  **Authentication Confusion**: (Fixed) Previously, Web UI tried to use API endpoints without JWTs. Fixed by "Hybrid Auth" update.
+2.  **Security - CORS**: Currently allows `*` (All origins). Risky for production.
+3.  **Security - Secrets**: Secret keys are in `config.py` default. Should be strictly env vars in production.
+4.  **Performance - Images**: User can upload 10MB images. No resize logice logic. This will fill up disk space fast.
+5.  **UI - Mobile Web**: The Dashboard tables might break layout on very small phone screens (needs `overflow-x: auto`).
+
+---
+
+## 9. Explanation for Team (5 Minutes)
+*"Hey team, here is what we have:*
+1.  *We built a **Python server** that stores all our data.*
+2.  *It has a **Web Dashboard** for us (admins) to see charts and maps.*
+3.  *It has an **API** for the Android App to talk to.*
+4.  *The **AI Part** works like this: You upload a photo, the server pretends to scan it (demo mode), and saves the result.*
+5.  *Everything runs on my laptop. The phone connects via **USB Tunnel** (ADB) so we don't have WiFi issues.*
+6.  *The Login works for both web and phone because we implemented a special hybrid security system."*
+
+---
+
+## 10. Summary
+This is a solid **MVP (Minimum Viable Product)**.
+It demonstrates the full loop: **Mobile -> Cloud -> Web Admin**.
+
+- **It is NOT**: A production-ready SaaS (needs HTTPS, real Email, real AI).
+- **Easy Win**: Customize the Dashboard colors to look more "Security" themed.
+- **Hard Part Done**: The Android-to-Server connection is stable.

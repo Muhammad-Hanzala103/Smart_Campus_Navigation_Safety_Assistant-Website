@@ -1,0 +1,140 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+\geometry{margin=1in}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={CNSMS Project Report},
+}
+
+% Code Style
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{pythonstyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=pythonstyle}
+
+\title{\textbf{Campus Navigation and Safety Management System (CNSMS)}}
+\author{Muhammad Hanzala (232201020) \\ Haseeb Nawaz (232201011) \\ [Third Member] (232201015)}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\begin{abstract}
+This report details the design and implementation of the Campus Navigation and Safety Management System (CNSMS). The system integrates a Python Flask backend with an Android mobile client to enhance campus security. Key features include real-time incident reporting, AI-based severity analysis, and an interactive safety heatmap. The system utilizes a hybrid authentication mechanism ensuring seamless access for both web and mobile users.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+The CNSMS project aims to modernize campus security operations. By allowing students to report incidents via mobile devices and providing security officers with a centralized web dashboard, the system reduces response times and improves situational awareness.
+
+\section{System Architecture}
+The system follows a client-server architecture.
+\begin{itemize}
+    \item \textbf{Backend}: Python Flask (REST API + Web Views).
+    \item \textbf{Database}: SQLite (Storage).
+    \item \textbf{Clients}: Android App (Student View) and Web Dashboard (Admin View).
+\end{itemize}
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}
+        \node[draw, rectangle, minimum width=3cm, minimum height=1.5cm] (Android) at (0,0) {Android App};
+        \node[draw, rectangle, minimum width=3cm, minimum height=1.5cm] (Web) at (0,3) {Web Dashboard};
+        \node[draw, rectangle, minimum width=4cm, minimum height=3cm] (Server) at (6,1.5) {Flask Server};
+        \node[draw, cylinder, shape border rotate=90, aspect=0.25, minimum height=2cm, minimum width=1.5cm] (DB) at (10,1.5) {SQLite DB};
+        
+        \draw[->, thick] (Android) -- node[above] {REST API (JWT)} (Server);
+        \draw[->, thick] (Web) -- node[above] {HTTP (Session)} (Server);
+        \draw[<->, thick] (Server) -- (DB);
+    \end{tikzpicture}
+    \caption{High-Level System Architecture}
+\end{figure}
+
+\section{Backend Implementation}
+The backend is structured using Flask Blueprints for modularity.
+
+\subsection{Authentication}
+A hybrid approach handles differing client needs:
+\begin{itemize}
+    \item \textbf{Web}: Uses \texttt{Flask-Login} for session management.
+    \item \textbf{API}: Uses \texttt{PyJWT} for stateless token authentication.
+\end{itemize}
+
+\subsection{AI Integration}
+The system includes an AI service module designed to analyze uploaded incident images.
+\begin{lstlisting}[language=Python, caption=AI Analysis Logic Stub]
+def analyze_image(image_bytes):
+    # Mock analysis logic
+    return {
+        "severity": "HIGH",
+        "confidence": 0.88,
+        "labels": ["fire", "hazard"]
+    }
+\end{lstlisting}
+
+\section{Database Schema}
+The database manages users, incidents, and audit logs.
+
+\begin{longtable}{|p{3cm}|p{4cm}|p{6cm}|}
+\hline
+\textbf{Table} & \textbf{Key Columns} & \textbf{Description} \\
+\hline
+\endhead
+User & id, email, role & Stores credentials and access levels. \\
+\hline
+Incident & id, user\_id, status & Stores incident reports and AI results. \\
+\hline
+\end{longtable}
+
+\section{Security & Usability}
+\subsection{Security Measures}
+\begin{itemize}
+    \item Password hashing with Werkzeug (PBKDF2).
+    \item JWT tokens for API protection.
+    \item Input validation to prevent injection.
+\end{itemize}
+
+\subsection{HCI Features}
+\begin{itemize}
+    \item Responsive Dashboard (Bootstrap 5).
+    \item Color-coded status indicators (Red=High Risk).
+    \item Toast notifications for user feedback.
+\end{itemize}
+
+\section{Conclusion}
+The CNSMS prototype successfully demonstrates the core flow of incident reporting and management. Future work includes integrating a live AI model and deploying to a cloud provider.
+
+\end{document}
