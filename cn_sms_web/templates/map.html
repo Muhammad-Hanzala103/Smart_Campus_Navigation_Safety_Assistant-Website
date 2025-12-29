@@ -225,9 +225,9 @@
 <script src="https://leaflet.github.io/Leaflet.heat/dist/leaflet-heat.js"></script>
 
 <script>
-    // Initialize Map - KICSIT, Kahuta
-    const BASE_LAT = 33.6515;
-    const BASE_LNG = 73.1565;
+    // Initialize Map - KICSIT New Building
+    const BASE_LAT = 33.6003288;
+    const BASE_LNG = 73.3506904;
     const SCALE = 0.0001;
 
     // Center strict on KICSIT
@@ -239,7 +239,7 @@
 
     // KICSIT Marker
     L.marker([BASE_LAT, BASE_LNG]).addTo(map)
-        .bindPopup("<b>KICSIT Campus</b><br>Dr. A. Q. Khan Institute").openPopup();
+        .bindPopup("<b>KICSIT New Building</b><br>Kahuta Road").openPopup();
 
     let heatLayer;
     let markersLayer = L.layerGroup().addTo(map);
