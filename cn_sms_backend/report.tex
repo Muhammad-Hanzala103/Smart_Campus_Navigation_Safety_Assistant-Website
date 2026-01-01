@@ -1,0 +1,75 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{geometry}
+\geometry{letterpaper, margin=1in}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{tikz}
+
+\title{
+    \textbf{Campus Navigation and Safety Management System} \\
+    \large Backend Architecture and Implementation Report
+}
+\author{
+    \textbf{Project Team:} \\
+    Muhammad Hanzala (Reg 232201020) \\
+    Haseeb Nawaz (Reg 232201011) \\
+    Saad Ali (Reg 232201015) \\[1em]
+    \textbf{Instructor:} Sir Hussain Gillani \\
+    \textbf{Course:} Web Technology
+}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This report details the implementation of the backend server for the Campus Navigation and Safety Management System (CN\_SMS). It covers the Flask-based architecture, RESTful API design, database schema, AI integration for safety analytics, and the administrative dashboard.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+\section{Introduction}
+The CN\_SMS backend acts as the central intelligence hub, connecting the Android client app used by students/guards with the administrative web dashboard. It manages data consistency, provides navigation graphs, handles room bookings, and processes incident reports using AI.
+
+\section{System Architecture}
+The system is built on a micro-kernel architecture using Flask Blueprints to separate concerns.
+\begin{enumerate}
+    \item \textbf{Presentation Layer}: REST APIs (JSON) and Jinja2 Web View.
+    \item \textbf{Business Logic Layer}: Controllers for Auth, Map, Incidents, and Bookings.
+    \item \textbf{Data Layer}: SQLAlchemy ORM wrapping SQLite/PostgreSQL.
+\end{enumerate}
+
+\section{Database Schema (ERD)}
+\begin{itemize}
+    \item \textbf{User}: Stores credentials and roles (Admin, Security, Staff, Student).
+    \item \textbf{MapNode/Edge}: Stores the graph needed for A* navigation on the client.
+    \item \textbf{Incident}: Stores reports including images and AI analysis results.
+    \item \textbf{Booking}: Manages room reservations with conflict detection.
+\end{itemize}
+
+\section{API Summary}
+The backend exposes the following key endpoints:
+\begin{itemize}
+    \item \texttt{POST /api/auth/login}: JWT Authentication.
+    \item \texttt{GET /api/map}: Retrieves the full campus graph.
+    \item \texttt{POST /api/incidents/analyze}: Triggers Hugging Face AI to detect threats in images.
+    \item \texttt{POST /api/bookings}: Creates new bookings with time-conflict validation (HTTP 409).
+\end{itemize}
+
+\section{AI Integration}
+We integrate a Vision Transformer model (YOLOS-tiny) via the Hugging Face Inference API. The backend:
+\begin{enumerate}
+    \item Receives an image upload.
+    \item Sends it to the Inference Endpoint.
+    \item Processes detection tags (e.g., "fire", "person") to determine Severity (HIGH/MED/LOW).
+    \item Falls back to a deterministic Mock analyzer if the external API is unreachable.
+\end{enumerate}
+
+\section{Conclusion}
+The CN\_SMS backend successfully provides a robust, secure, and intelligent foundation for campus safety and navigation. It meets all specified requirements including modularity, security, and AI capabilities.
+
+\end{document}

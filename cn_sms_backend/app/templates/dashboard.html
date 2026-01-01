@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Dashboard</h2>
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5>Total Users</h5>
+                <h2>{{ stats.total_users }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <h5>Open Incidents</h5>
+                <h2>{{ stats.open_incidents }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <h5>Pending Bookings</h5>
+                <h2>{{ stats.pending_bookings }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Incident Analytics</div>
+            <div class="card-body">
+                <canvas id="incidentChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Recent Activity</div>
+            <ul class="list-group list-group-flush">
+                {% for log in activity %}
+                <li class="list-group-item">
+                    <small class="text-muted">{{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                    <br>
+                    <strong>{{ log.action }}</strong>: {{ log.details }}
+                </li>
+                {% else %}
+                <li class="list-group-item">No recent activity</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    fetch('/api/analytics/incidents')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('incidentChart').getContext('2d');
+            const labels = Object.keys(data.status_breakdown || {});
+            const values = Object.values(data.status_breakdown || {});
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Incidents by Status',
+                        data: values,
+                        backgroundColor: ['#ffc107', '#28a745', '#dc3545', '#6c757d']
+                    }]
+                }
+            });
+        });
+</script>
+{% endblock %}
