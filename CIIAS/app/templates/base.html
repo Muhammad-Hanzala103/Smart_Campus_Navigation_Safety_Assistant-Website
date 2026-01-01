@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIIAS - {% block title %}Dashboard{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/ciias.css') }}">
+</head>
+
+<body>
+    <nav class="top-navbar">
+        <div class="nav-brand">CIIAS</div>
+        <div class="nav-links">
+            <a href="{{ url_for('web.dashboard') }}" class="{{ 'active' if request.endpoint == 'web.dashboard' }}">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a href="{{ url_for('web.incidents') }}" class="{{ 'active' if 'incident' in request.endpoint }}">
+                <i class="fas fa-exclamation-triangle"></i> Incidents
+            </a>
+            <a href="{{ url_for('web.map_intelligence') }}"
+                class="{{ 'active' if request.endpoint == 'web.map_intelligence' }}">
+                <i class="fas fa-map-marked-alt"></i> Map Intelligence
+            </a>
+            <a href="{{ url_for('web.system_status') }}"
+                class="{{ 'active' if request.endpoint == 'web.system_status' }}">
+                <i class="fas fa-server"></i> System Status
+            </a>
+            {% if has_permission('users') %}
+            <a href="{{ url_for('web.users') }}" class="{{ 'active' if request.endpoint == 'web.users' }}">
+                <i class="fas fa-users"></i> Users
+            </a>
+            {% endif %}
+            {% if has_permission('analytics') %}
+            <a href="{{ url_for('web.analytics') }}" class="{{ 'active' if request.endpoint == 'web.analytics' }}">
+                <i class="fas fa-chart-pie"></i> Analytics
+            </a>
+            {% endif %}
+            {% if has_permission('audit_logs') %}
+            <a href="{{ url_for('web.audit_logs') }}" class="{{ 'active' if request.endpoint == 'web.audit_logs' }}">
+                <i class="fas fa-history"></i> Audit Logs
+            </a>
+            {% endif %}
+        </div>
+        <div class="nav-user">
+            <div class="dropdown">
+                <button class="dropdown-toggle" onclick="toggleDropdown()">
+                    <span class="user-avatar">{{ session.get('user_name', 'U')[0] }}</span>
+                    <span>{{ session.get('user_name', 'User') }}</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="dropdown-menu" id="userDropdown">
+                    <div class="dropdown-header">
+                        <strong>{{ session.get('user_name') }}</strong>
+                        <small>{{ session.get('user_email') }}</small>
+                        <span class="role-badge">{{ session.get('user_role', 'user').upper() }}</span>
+                    </div>
+                    <hr>
+                    <a href="{{ url_for('web.profile') }}"><i class="fas fa-user"></i> Profile</a>
+                    {% if has_permission('settings') %}
+                    <a href="{{ url_for('web.settings') }}"><i class="fas fa-cog"></i> Settings</a>
+                    {% endif %}
+                    <hr>
+                    <a href="{{ url_for('web.logout') }}" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container"></div>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            showToast('{{ messages[0] }}');
+        });
+    </script>
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Dropdown toggle
+        function toggleDropdown() {
+            document.getElementById('userDropdown').classList.toggle('show');
+        }
+
+        // Close dropdown when clicking outside
+        window.onclick = function (e) {
+            if (!e.target.matches('.dropdown-toggle') && !e.target.closest('.dropdown-toggle')) {
+                var dropdowns = document.getElementsByClassName('dropdown-menu');
+                for (var i = 0; i < dropdowns.length; i++) {
+                    dropdowns[i].classList.remove('show');
+                }
+            }
+        }
+
+        // Toast notification
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast toast-' + type;
+            toast.innerHTML = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

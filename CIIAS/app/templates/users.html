@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+            <h1>User Management</h1>
+            <p>Manage system users and roles</p>
+        </div>
+        <button class="btn-primary btn-sm" onclick="openModal()"><i class="fas fa-plus"></i> Add User</button>
+    </div>
+
+    <div class="filters">
+        <input type="text" placeholder="Search users..." id="searchUser" onkeyup="filterUsers()">
+        <select id="roleFilter" onchange="filterUsers()">
+            <option value="">All Roles</option>
+            <option value="admin">Admin</option>
+            <option value="security">Security</option>
+            <option value="staff">Staff</option>
+            <option value="student">Student</option>
+        </select>
+    </div>
+
+    <table class="data-table" id="usersTable">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Phone</th>
+                <th>Joined</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in users %}
+            <tr data-role="{{ u.role }}">
+                <td style="display:flex;align-items:center;gap:0.75rem;">
+                    <div class="user-avatar" style="width:36px;height:36px;font-size:0.85rem;">{{ u.name[0] }}</div>
+                    <strong>{{ u.name }}</strong>
+                </td>
+                <td>{{ u.email }}</td>
+                <td>
+                    <form action="{{ url_for('web.update_user_role', id=u.id) }}" method="POST" style="display:inline;">
+                        <select name="role" onchange="this.form.submit()" class="form-control"
+                            style="padding:0.25rem 0.5rem;font-size:0.85rem;width:auto;">
+                            <option value="admin" {{ 'selected' if u.role=='admin' }}>Admin</option>
+                            <option value="security" {{ 'selected' if u.role=='security' }}>Security</option>
+                            <option value="staff" {{ 'selected' if u.role=='staff' }}>Staff</option>
+                            <option value="student" {{ 'selected' if u.role=='student' }}>Student</option>
+                        </select>
+                    </form>
+                </td>
+                <td>{{ u.phone or '-' }}</td>
+                <td>{{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '-' }}</td>
+                <td>
+                    <a href="#" style="color:var(--accent);margin-right:0.5rem;" title="Edit"><i
+                            class="fas fa-edit"></i></a>
+                    <a href="#" style="color:var(--danger);" title="Delete"><i class="fas fa-trash"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function filterUsers() {
+        const search = document.getElementById('searchUser').value.toLowerCase();
+        const role = document.getElementById('roleFilter').value;
+        const rows = document.querySelectorAll('#usersTable tbody tr');
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const rowRole = row.dataset.role;
+            const matchesSearch = text.includes(search);
+            const matchesRole = !role || rowRole === role;
+            row.style.display = matchesSearch && matchesRole ? '' : 'none';
+        });
+    }
+</script>
+{% endblock %}

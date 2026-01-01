@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="page-container" style="max-width:800px;">
+    <div class="page-header">
+        <h1>System Settings</h1>
+        <p>Configure CIIAS system preferences</p>
+    </div>
+
+    <div class="info-card" style="margin-bottom:1.5rem;">
+        <h3>General Settings</h3>
+        <form>
+            <div class="form-group">
+                <label>System Name</label>
+                <input type="text" class="form-control" value="CIIAS - Campus Incident Intelligence & Analytics System">
+            </div>
+            <div class="form-group">
+                <label>Campus Name</label>
+                <input type="text" class="form-control" value="KICSIT New Building">
+            </div>
+            <div class="form-group">
+                <label>Campus Location</label>
+                <input type="text" class="form-control" value="J922+47P, Kahuta Rd, Rawalpindi, Pakistan">
+            </div>
+            <button type="button" class="btn-primary btn-sm" onclick="showToast('Settings saved!', 'success')">Save
+                Settings</button>
+        </form>
+    </div>
+
+    <div class="info-card" style="margin-bottom:1.5rem;">
+        <h3>AI Configuration</h3>
+        <div class="info-row">
+            <span class="label">AI Mode</span>
+            <span class="value">MOCK (Demo Mode)</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Model</span>
+            <span class="value">hustvl/yolos-tiny</span>
+        </div>
+        <div class="info-row">
+            <span class="label">API Status</span>
+            <span class="badge badge-warning">Mock Active</span>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <h3>Notification Settings</h3>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:0.75rem;">
+                <input type="checkbox" checked> Email alerts for high-severity incidents
+            </label>
+        </div>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:0.75rem;">
+                <input type="checkbox" checked> Browser notifications
+            </label>
+        </div>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:0.75rem;">
+                <input type="checkbox"> SMS alerts (requires configuration)
+            </label>
+        </div>
+    </div>
+</div>
+{% endblock %}

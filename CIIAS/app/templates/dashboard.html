@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+            <h1>Command Center</h1>
+            <p>KICSIT Security Intelligence Overview</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+            <span class="legend-dot low"></span>
+            <span style="color:var(--success);font-weight:600;">System Online</span>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="status-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="status-card" style="display:flex;align-items:center;gap:1rem;">
+            <div
+                style="width:48px;height:48px;background:#fee2e2;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <span style="color:#ef4444;font-size:1.5rem;">⚠️</span>
+            </div>
+            <div>
+                <div class="quick-stat" style="font-size:2rem;">{{ stats.high_risk }}</div>
+                <div class="quick-stat-label">High Risk</div>
+            </div>
+        </div>
+        <div class="status-card" style="display:flex;align-items:center;gap:1rem;">
+            <div
+                style="width:48px;height:48px;background:#fef3c7;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <span style="color:#f59e0b;font-size:1.5rem;">⏱️</span>
+            </div>
+            <div>
+                <div class="quick-stat" style="font-size:2rem;">{{ stats.active_cases }}</div>
+                <div class="quick-stat-label">Active Cases</div>
+            </div>
+        </div>
+        <div class="status-card" style="display:flex;align-items:center;gap:1rem;">
+            <div
+                style="width:48px;height:48px;background:#dbeafe;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <span style="color:#3b82f6;font-size:1.5rem;">📋</span>
+            </div>
+            <div>
+                <div class="quick-stat" style="font-size:2rem;">{{ stats.total_reports }}</div>
+                <div class="quick-stat-label">Total Reports</div>
+            </div>
+        </div>
+        <div class="status-card" style="display:flex;align-items:center;gap:1rem;">
+            <div
+                style="width:48px;height:48px;background:#dcfce7;border-radius:12px;display:flex;align-items:center;justify-content:center;">
+                <span style="color:#22c55e;font-size:1.5rem;">✓</span>
+            </div>
+            <div>
+                <div class="quick-stat" style="font-size:2rem;color:var(--success);">Secure</div>
+                <div class="quick-stat-label">Campus Status</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts & Alerts -->
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-top:1.5rem;">
+        <div class="info-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <h3 style="border:none;padding:0;margin:0;">Incident Trends (7 Days)</h3>
+                <div style="display:flex;gap:1rem;font-size:0.85rem;">
+                    <span><span class="legend-dot high" style="display:inline-block;margin-right:0.25rem;"></span> High
+                        Risk</span>
+                    <span><span class="legend-dot medium" style="display:inline-block;margin-right:0.25rem;"></span>
+                        Regular</span>
+                </div>
+            </div>
+            <canvas id="trendChart" height="200"></canvas>
+        </div>
+
+        <div class="info-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <h3 style="border:none;padding:0;margin:0;">Recent Alerts</h3>
+                <a href="{{ url_for('web.incidents') }}"
+                    style="color:var(--accent);text-decoration:none;font-size:0.85rem;">View All →</a>
+            </div>
+
+            {% for inc in recent_incidents %}
+            <div
+                style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid #f3f4f6;">
+                <span
+                    style="color:{{ 'var(--danger)' if inc.ai_severity == 'HIGH' else 'var(--accent)' if inc.ai_severity == 'MEDIUM' else 'var(--text-light)' }};">{{
+                    '!' if inc.ai_severity == 'HIGH' else '•' }}</span>
+                <div style="flex:1;">
+                    <div style="font-weight:600;">{{ inc.category }}</div>
+                    <div style="font-size:0.85rem;color:var(--text-light);">{{ inc.description[:30] }}</div>
+                    <div style="font-size:0.75rem;color:var(--text-light);">{{ inc.created_at.strftime('%b %d, %H:%M')
+                        }}</div>
+                </div>
+                <span
+                    class="badge badge-{{ 'danger' if inc.ai_severity == 'HIGH' else 'warning' if inc.ai_severity == 'MEDIUM' else 'success' }}">{{
+                    inc.ai_severity }}</span>
+            </div>
+            {% else %}
+            <p style="color:var(--text-light);text-align:center;padding:2rem;">No recent alerts</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Incident Trends Chart
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+                label: 'High Risk',
+                data: [2, 4, 3, 4, 2, 1, 2],
+                borderColor: '#ef4444',
+                backgroundColor: 'transparent',
+                tension: 0.4
+            }, {
+                label: 'Regular',
+                data: [8, 12, 6, 7, 11, 4, 5],
+                borderColor: '#3b82f6',
+                backgroundColor: 'transparent',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+{% endblock %}

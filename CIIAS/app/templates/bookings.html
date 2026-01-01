@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Bookings{% endblock %}
+{% block content %}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Room</th>
+            <th>User</th>
+            <th>Time</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>{% for b in bookings %}<tr>
+            <td>{{ b.id }}</td>
+            <td>{{ b.room.name }}</td>
+            <td>{{ b.user.name }}</td>
+            <td>{{ b.start_time }} - {{ b.end_time }}</td>
+            <td>{{ b.status }}</td>
+        </tr>{% endfor %}</tbody>
+</table>
+{% endblock %}

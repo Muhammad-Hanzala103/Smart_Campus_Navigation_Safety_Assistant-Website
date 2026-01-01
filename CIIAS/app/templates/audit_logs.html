@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1>Audit Logs</h1>
+        <p>System activity and security logs</p>
+    </div>
+
+    <div class="filters">
+        <input type="text" placeholder="Search logs..." id="searchLog" onkeyup="filterLogs()">
+        <select id="actionFilter" onchange="filterLogs()">
+            <option value="">All Actions</option>
+            <option value="LOGIN">Login</option>
+            <option value="LOGOUT">Logout</option>
+            <option value="INCIDENT">Incident</option>
+        </select>
+    </div>
+
+    <table class="data-table" id="logsTable">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>User</th>
+                <th>Action</th>
+                <th>Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr data-action="{{ log.action }}">
+                <td>{{ log.timestamp.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                <td>{{ log.user.name if log.user else 'System' }}</td>
+                <td><span class="badge badge-{{ 'success' if 'LOGIN' in log.action else 'info' }}">{{ log.action
+                        }}</span></td>
+                <td>{{ log.details }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4" style="text-align:center;color:var(--text-light);padding:2rem;">No logs found</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function filterLogs() {
+        const search = document.getElementById('searchLog').value.toLowerCase();
+        const action = document.getElementById('actionFilter').value;
+        const rows = document.querySelectorAll('#logsTable tbody tr');
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const rowAction = row.dataset.action || '';
+            const matchesSearch = text.includes(search);
+            const matchesAction = !action || rowAction.includes(action);
+            row.style.display = matchesSearch && matchesAction ? '' : 'none';
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1>Analytics Dashboard</h1>
+        <p>Comprehensive incident and system analytics</p>
+    </div>
+
+    <div class="status-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="status-card">
+            <h3><i class="fas fa-file-alt" style="color:var(--accent);"></i> Total Reports</h3>
+            <div class="quick-stat" id="totalReports">-</div>
+        </div>
+        <div class="status-card">
+            <h3><i class="fas fa-exclamation-circle" style="color:var(--danger);"></i> High Severity</h3>
+            <div class="quick-stat" id="highSeverity" style="color:var(--danger);">-</div>
+        </div>
+        <div class="status-card">
+            <h3><i class="fas fa-clock" style="color:var(--warning);"></i> Pending</h3>
+            <div class="quick-stat" id="pendingCount">-</div>
+        </div>
+        <div class="status-card">
+            <h3><i class="fas fa-check-circle" style="color:var(--success);"></i> Resolved</h3>
+            <div class="quick-stat" id="resolvedCount" style="color:var(--success);">-</div>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
+        <div class="info-card">
+            <h3>Incidents by Status</h3>
+            <canvas id="statusChart" height="250"></canvas>
+        </div>
+        <div class="info-card">
+            <h3>Incidents by Severity</h3>
+            <canvas id="severityChart" height="250"></canvas>
+        </div>
+    </div>
+
+    <div class="info-card" style="margin-top:1.5rem;">
+        <h3>Weekly Trend</h3>
+        <canvas id="trendChart" height="100"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    fetch('/web/api/incidents/stats')
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('totalReports').textContent = data.total;
+            document.getElementById('highSeverity').textContent = data.high;
+            document.getElementById('pendingCount').textContent = data.open + data.in_progress;
+            document.getElementById('resolvedCount').textContent = data.resolved;
+
+            // Status Chart
+            new Chart(document.getElementById('statusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Open', 'In Progress', 'Resolved'],
+                    datasets: [{
+                        data: [data.open, data.in_progress, data.resolved],
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#22c55e']
+                    }]
+                },
+                options: { plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Severity Chart
+            new Chart(document.getElementById('severityChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [data.high, data.medium, data.low],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#22c55e']
+                    }]
+                },
+                options: { plugins: { legend: { position: 'bottom' } } }
+            });
+
+            // Trend Chart
+            new Chart(document.getElementById('trendChart'), {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Incidents',
+                        data: [3, 5, 2, 8, 4, 1, 2],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59,130,246,0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        });
+</script>
+{% endblock %}

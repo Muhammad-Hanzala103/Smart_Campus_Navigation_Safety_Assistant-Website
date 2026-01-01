@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}System Status{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <h1>System Status</h1>
+        <p>Real-time system health and monitoring</p>
+    </div>
+
+    <div class="status-grid">
+        <div class="status-card">
+            <h3><span style="color:var(--accent);">⚡</span> API Server <span class="badge badge-success">Online</span>
+            </h3>
+            <p>Response: 200 OK</p>
+        </div>
+        <div class="status-card">
+            <h3><span style="color:var(--success);">🗄️</span> Database <span class="badge badge-success">Online</span>
+            </h3>
+            <p>SQLite / Connected</p>
+        </div>
+        <div class="status-card">
+            <h3><span style="color:var(--warning);">🤖</span> AI Service <span class="badge badge-warning">Mock
+                    Mode</span></h3>
+            <p>Mode: MOCK</p>
+        </div>
+        <div class="status-card">
+            <h3><span style="color:var(--info);">🔐</span> Authentication <span class="badge badge-info">Active</span>
+            </h3>
+            <p>JWT / Session Active</p>
+        </div>
+    </div>
+
+    <div class="info-card">
+        <h3>System Information</h3>
+        <div class="info-row">
+            <span class="label">Version</span>
+            <span class="value">1.0.0</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Environment</span>
+            <span class="value">Development</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Server Time</span>
+            <span class="value" id="serverTime">Loading...</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Uptime</span>
+            <span class="value" style="color:var(--success);">Active</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('serverTime').textContent = now.toLocaleString('en-GB');
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+</script>
+{% endblock %}

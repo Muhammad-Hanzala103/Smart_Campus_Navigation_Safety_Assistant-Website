@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Map Editor{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-md-9">
+        <div id="map-container" style="position:relative;border:2px solid #333;height:600px;background:#ddd;">
+            <p class="text-center p-5 text-muted">Click to add nodes</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-header">Nodes</div>
+            <ul id="nodesList" class="list-group list-group-flush" style="max-height:500px;overflow-y:auto;"></ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+    const mapC = document.getElementById('map-container'), nodesList = document.getElementById('nodesList'); let nodes = [];
+    function fetchNodes() { fetch('/api/map/').then(r => r.json()).then(d => { nodes = d.nodes; renderNodes() }); }
+    function renderNodes() {
+        document.querySelectorAll('.node-dot').forEach(e => e.remove()); nodesList.innerHTML = '';
+        nodes.forEach(n => {
+            const dot = document.createElement('div'); dot.className = 'node-dot'; dot.style = 'position:absolute;left:' + n.x + 'px;top:' + n.y + 'px;width:10px;height:10px;background:red;border-radius:50%;cursor:pointer;'; dot.title = n.name; mapC.appendChild(dot);
+            const li = document.createElement('li'); li.className = 'list-group-item d-flex justify-content-between'; li.innerHTML = n.name + '<button class="btn btn-sm btn-danger" onclick="delNode(' + n.id + ')">X</button>'; nodesList.appendChild(li);
+        });
+    }
+    function delNode(id) { if (confirm('Delete?')) fetch('/api/map/nodes/' + id, { method: 'DELETE' }).then(() => fetchNodes()); }
+    mapC.addEventListener('click', e => { const r = mapC.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top, name = prompt('Node Name:'); if (name) fetch('/api/map/nodes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, x, y, node_type: 'hallway' }) }).then(() => fetchNodes()); });
+    fetchNodes();
+</script>
+{% endblock %}
