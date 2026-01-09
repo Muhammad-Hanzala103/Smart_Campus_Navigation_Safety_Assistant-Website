@@ -92,6 +92,32 @@ def dashboard():
     recent_activity = AuditLog.query.order_by(AuditLog.timestamp.desc()).limit(10).all()
     return render_template('dashboard.html', stats=stats, recent_incidents=recent_incidents, activity=recent_activity)
 
+# ============== SECURITY MODULE ==============
+@web_bp.route('/security')
+@login_required
+@role_required(ROLE_ADMIN, ROLE_SECURITY)
+def security_dashboard():
+    return render_template('security_dashboard.html')
+
+# ============== FACULTY MODULE ==============
+from app.models import Course, Shuttle # Import new models
+@web_bp.route('/faculty')
+@login_required
+# @role_required(ROLE_ADMIN, ROLE_STAFF) # Loosened for demo
+def faculty_dashboard():
+    courses = Course.query.all()
+    # If using user-specific courses: courses = Course.query.filter_by(instructor_id=session['user_id']).all()
+    return render_template('faculty_dashboard.html', courses=courses)
+
+# ============== TRANSPORT MODULE ==============
+@web_bp.route('/transport')
+@login_required
+def transport_dashboard():
+    shuttles = Shuttle.query.all()
+    return render_template('transport_dashboard.html', shuttles=shuttles) # Pass shuttle data
+
+# ============== INCIDENTS ==============
+
 # ============== INCIDENTS ==============
 @web_bp.route('/incidents')
 @login_required

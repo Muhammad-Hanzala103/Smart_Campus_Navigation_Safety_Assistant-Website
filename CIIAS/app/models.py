@@ -231,6 +231,7 @@ class MapNode(db.Model):
     description = db.Column(db.Text)
     is_accessible = db.Column(db.Boolean, default=True)
     is_emergency_exit = db.Column(db.Boolean, default=False)
+    altitude = db.Column(db.Float, default=0.0) # Added for AR Navigation
 
     def to_dict(self):
         return {
@@ -318,7 +319,101 @@ class AuditLog(db.Model):
         return {
             'id': self.id,
             'user_id': self.user_id,
-            'action': self.action,
-            'details': self.details,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None
         }
+
+
+# ==================== NEW MODULES FOR SMART CAMPUS ====================
+
+class Course(db.Model):
+    __tablename__ = 'courses'
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(20), unique=True, nullable=False)  # CS-101
+    name = db.Column(db.String(100), nullable=False)
+    instructor_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    schedule = db.Column(db.String(100)) # e.g. "Mon,Wed 10:00-11:30"
+    
+    instructor = db.relationship('User', backref='courses_teaching')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'code': self.code,
+            'name': self.name,
+            'instructor': self.instructor.name if self.instructor else 'Unassigned',
+            'schedule': self.schedule
+        }
+
+class Attendance(db.Model):
+    __tablename__ = 'attendance'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
+    date = db.Column(db.Date, default=datetime.today)
+    status = db.Column(db.String(20), default='Present') # Present, Absent, Late
+
+    course = db.relationship('Course', backref='attendance_records')
+    student = db.relationship('User', backref='attendance_records')
+
+class Grade(db.Model):
+    __tablename__ = 'grades'
+    id = db.Column(db.Integer, primary_key=True)
+    student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
+    exam_type = db.Column(db.String(50)) # Midterm, Final, Quiz
+    score = db.Column(db.Float)
+    total_marks = db.Column(db.Float)
+    
+    course = db.relationship('Course')
+
+class Shuttle(db.Model):
+    __tablename__ = 'shuttles'
+    id = db.Column(db.Integer, primary_key=True)
+    plate_number = db.Column(db.String(20), unique=True)
+    route_name = db.Column(db.String(50)) # "Blue Line"
+    status = db.Column(db.String(20), default='Offline') # Active, Offline, Maintenance
+    current_lat = db.Column(db.Float)
+    current_lng = db.Column(db.Float)
+    heading = db.Column(db.Float, default=0.0)
+    last_updated = db.Column(db.DateTime)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'plate_number': self.plate_number,
+            'route_name': self.route_name,
+            'status': self.status,
+            'current_lat': self.current_lat,
+            'current_lng': self.current_lng,
+            'heading': self.heading,
+            'last_updated': self.last_updated.isoformat() if self.last_updated else None
+        }
+
+class Book(db.Model):
+    __tablename__ = 'books'
+    id = db.Column(db.Integer, primary_key=True)
+    isbn = db.Column(db.String(20), unique=True)
+    title = db.Column(db.String(200), nullable=False)
+    author = db.Column(db.String(100))
+    category = db.Column(db.String(50))
+    status = db.Column(db.String(20), default='Available') # Available, Issued
+    cover_image_url = db.Column(db.String(256))
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'isbn': self.isbn,
+            'title': self.title,
+            'author': self.author,
+            'category': self.category,
+            'status': self.status,
+            'cover_image_url': self.cover_image_url
+        }
+
+class Wallet(db.Model):
+    __tablename__ = 'wallets'
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    balance = db.Column(db.Integer, default=0) # Campus Points
+    last_updated = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    user = db.relationship('User', backref=db.backref('wallet', uselist=False))
