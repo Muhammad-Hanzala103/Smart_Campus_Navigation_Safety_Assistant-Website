@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+import datetime
 from app import db
 from app.models import Wallet, MapNode, User
 
@@ -31,25 +32,32 @@ def get_ar_nodes():
     if not nodes:
         nodes = MapNode.query.all()
         
-    return jsonify([n.to_dict() for n in nodes]), 200
+    return jsonify([{
+        'id': n.id,
+        'lat': n.lat,
+        'lng': n.lng,
+        'altitude': getattr(n, 'altitude', 0.0),
+        'type': getattr(n, 'type', 'waypoint'),
+        'name': getattr(n, 'name', f'Node {n.id}')
+    } for n in nodes]), 200
 
 # ==================== AI CHATBOT ====================
+from app.ai_chat import chatbot
 
 @engagement_bp.route('/chat/ask', methods=['POST'])
 def ask_chatbot():
     data = request.json
     query = data.get('query')
     
-    # Mock AI response logic (would connect to Gemini/OpenAI here)
-    response_text = "I am the Smart Campus AI. I can help you with schedules, locations, and safety."
-    
-    if "library" in query.lower():
-        response_text = "The library is open from 8 AM to 8 PM. It is located in Block B."
-    elif "cafe" in query.lower():
-        response_text = "The cafeteria serves lunch from 12 PM to 2 PM."
+    if not query:
+        return jsonify({'response': "Please ask a question."}), 400
         
+    result = chatbot.get_response(query)
+    
     return jsonify({
-        'response': response_text,
-        'timestamp': '2025-01-09T10:00:00Z',
-        'suggestions': ['Show map', 'Bus timings']
+        'response': result['reply'],
+        'source': result['source'],
+        'confidence': result['confidence'],
+        'timestamp': datetime.datetime.utcnow().isoformat(),
+        'suggestions': ['Bus Timings', 'Exam Dates', 'Library Hours']
     }), 200

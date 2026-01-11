@@ -1,0 +1,94 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Digital Library{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="{ search: '', category: 'All' }">
+
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold">Central Library</h1>
+            <p class="text-gray-400 text-sm">Browse catalog and manage digital resources.</p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="relative w-full md:w-96">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                <i class="fas fa-search"></i>
+            </span>
+            <input x-model="search" type="text" placeholder="Search title, author, or ISBN..."
+                class="w-full bg-slate-800 border border-slate-700 rounded-lg py-2 pl-10 pr-4 text-gray-200 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all">
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex space-x-2 overflow-x-auto pb-2">
+        <button @click="category = 'All'"
+            :class="category === 'All' ? 'bg-primary text-white' : 'bg-slate-800 text-gray-400 hover:text-white'"
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap">All</button>
+        <button @click="category = 'Computer Science'"
+            :class="category === 'Computer Science' ? 'bg-primary text-white' : 'bg-slate-800 text-gray-400 hover:text-white'"
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap">Computer
+            Science</button>
+        <button @click="category = 'Engineering'"
+            :class="category === 'Engineering' ? 'bg-primary text-white' : 'bg-slate-800 text-gray-400 hover:text-white'"
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap">Engineering</button>
+        <button @click="category = 'Literature'"
+            :class="category === 'Literature' ? 'bg-primary text-white' : 'bg-slate-800 text-gray-400 hover:text-white'"
+            class="px-4 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap">Literature</button>
+    </div>
+
+    <!-- Books Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for book in books %}
+        <div class="glass flex flex-col rounded-xl overflow-hidden border border-slate-700 group hover:border-primary/50 transition-colors"
+            x-show="(category === 'All' || category === '{{ book.category }}') && ('{{ book.title }}'.toLowerCase().includes(search.toLowerCase()) || '{{ book.author }}'.toLowerCase().includes(search.toLowerCase()))"
+            x-transition>
+
+            <!-- Book Cover -->
+            <div class="h-48 bg-slate-800 relative overflow-hidden">
+                {% if book.cover_image_url %}
+                <img src="{{ book.cover_image_url }}" alt="{{ book.title }}"
+                    class="w-full h-full object-cover transition-transform group-hover:scale-110">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center text-slate-600 bg-slate-900">
+                    <i class="fas fa-book text-4xl"></i>
+                </div>
+                {% endif %}
+                <div class="absolute top-2 right-2">
+                    <span
+                        class="px-2 py-1 rounded text-xs font-bold shadow-lg {{ 'bg-green-500 text-white' if book.status == 'Available' else 'bg-red-500 text-white' }}">
+                        {{ book.status }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Details -->
+            <div class="p-4 flex-1 flex flex-col">
+                <p class="text-xs text-primary font-bold uppercase tracking-wide mb-1">{{ book.category }}</p>
+                <h3 class="font-bold text-lg leading-tight mb-1 line-clamp-2">{{ book.title }}</h3>
+                <p class="text-sm text-gray-400 mb-4">{{ book.author }}</p>
+
+                <div class="mt-auto pt-4 border-t border-slate-700/50 flex justify-between items-center">
+                    <span class="text-xs text-gray-500 font-mono">{{ book.isbn }}</span>
+                    <button
+                        class="bg-slate-700 hover:bg-primary text-white w-8 h-8 rounded-full flex items-center justify-center transition-colors">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Empty State -->
+        {% if not books %}
+        <div class="col-span-full py-12 text-center text-gray-500 glass rounded-xl">
+            <i class="fas fa-box-open text-4xl mb-4 opacity-50"></i>
+            <p>No books currently in the catalog.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

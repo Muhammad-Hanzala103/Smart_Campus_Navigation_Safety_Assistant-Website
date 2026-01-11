@@ -116,6 +116,14 @@ def transport_dashboard():
     shuttles = Shuttle.query.all()
     return render_template('transport_dashboard.html', shuttles=shuttles) # Pass shuttle data
 
+# ============== LIBRARY MODULE ==============
+from app.models import Book
+@web_bp.route('/library')
+@login_required
+def library_dashboard():
+    books = Book.query.all()
+    return render_template('library_dashboard.html', books=books)
+
 # ============== INCIDENTS ==============
 
 # ============== INCIDENTS ==============

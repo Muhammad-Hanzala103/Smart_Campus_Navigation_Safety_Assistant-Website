@@ -5,8 +5,14 @@ from datetime import datetime
 
 transport_bp = Blueprint('transport', __name__)
 
+@transport_bp.route('/live', methods=['GET'])
+def get_live_shuttles():
+    """Get live location of all active shuttles"""
+    shuttles = Shuttle.query.filter_by(status='Active').all()
+    return jsonify([s.to_dict() for s in shuttles]), 200
+
 @transport_bp.route('/shuttles', methods=['GET'])
-def get_shuttles():
+def get_all_shuttles():
     shuttles = Shuttle.query.all()
     # Sort: Active first
     shuttles.sort(key=lambda x: x.status == 'Active', reverse=True)

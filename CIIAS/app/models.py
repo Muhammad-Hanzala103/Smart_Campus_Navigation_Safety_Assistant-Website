@@ -417,3 +417,94 @@ class Wallet(db.Model):
     last_updated = db.Column(db.DateTime, default=datetime.utcnow)
     
     user = db.relationship('User', backref=db.backref('wallet', uselist=False))
+
+
+class CafeteriaItem(db.Model):
+    __tablename__ = 'cafeteria_items'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    image_url = db.Column(db.String(256))
+    is_available = db.Column(db.Boolean, default=True)
+    category = db.Column(db.String(50)) # Snacks, Drinks, Meals
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'price': self.price,
+            'image_url': self.image_url,
+            'is_available': self.is_available,
+            'category': self.category
+        }
+
+
+class CafeteriaOrder(db.Model):
+    __tablename__ = 'cafeteria_orders'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    items = db.Column(db.JSON, nullable=False) # List of {item_id, quantity, price}
+    total_price = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), default='pending') # pending, preparing, ready, completed, cancelled
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='cafeteria_orders')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'items': self.items,
+            'total_price': self.total_price,
+            'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None
+        }
+
+
+class FeeChallan(db.Model):
+    __tablename__ = 'fee_challans'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    amount = db.Column(db.Float, nullable=False)
+    due_date = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(20), default='unpaid') # paid, unpaid, overdue
+    pdf_url = db.Column(db.String(256))
+    semester = db.Column(db.String(50))
+    generated_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='fee_challans')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'amount': self.amount,
+            'due_date': self.due_date.isoformat() if self.due_date else None,
+            'status': self.status,
+            'pdf_url': self.pdf_url,
+            'semester': self.semester
+        }
+
+
+class ChatMessage(db.Model):
+    __tablename__ = 'chat_messages'
+    id = db.Column(db.Integer, primary_key=True)
+    sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    message = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    is_read = db.Column(db.Boolean, default=False)
+
+    sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
+    receiver = db.relationship('User', foreign_keys=[receiver_id], backref='received_messages')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'sender_id': self.sender_id,
+            'receiver_id': self.receiver_id,
+            'message': self.message,
+            'timestamp': self.timestamp.isoformat() if self.timestamp else None,
+            'is_read': self.is_read
+        }
+

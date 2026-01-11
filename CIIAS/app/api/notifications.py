@@ -60,7 +60,7 @@ def delete_notification(current_user, id):
     return jsonify({'success': True}), 200
 
 
-@notifications_bp.route('/fcm-token', methods=['POST'])
+@notifications_bp.route('/register-token', methods=['POST'])
 @token_required
 def update_fcm_token(current_user):
     """Store FCM token for push notifications"""

@@ -151,3 +151,37 @@ def logout(current_user):
     # In a stateful implementation, you would invalidate the token here
     # For JWT, the token remains valid until expiration
     return jsonify({'success': True}), 200
+
+@auth_bp.route('/biometric-login', methods=['POST'])
+def biometric_login():
+    """Login using biometric signature/token from mobile"""
+    data = request.get_json()
+    bio_token = data.get('biometric_token')
+    email = data.get('email')
+    
+    # In production, verify the cryptographic signature of bio_token
+    # For now, we trust the mobile app if it sends a valid email + mock token
+    
+    if not email or not bio_token:
+        return jsonify({'message': 'Missing credentials'}), 400
+        
+    user = User.query.filter_by(email=email).first()
+    if not user:
+         return jsonify({'message': 'User not found'}), 404
+         
+    # Generate Token
+    token = jwt.encode({
+        'user_id': user.id,
+        'role': user.role,
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=Config.JWT_EXPIRATION_HOURS)
+    }, Config.JWT_SECRET, algorithm='HS256')
+    
+    return jsonify({
+        'token': token,
+        'user': {
+            'id': user.id,
+            'name': user.name,
+            'email': user.email,
+            'role': user.role
+        }
+    }), 200
