@@ -1,0 +1,116 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Smart Cafeteria{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Menu Management Section -->
+    <div class="lg:col-span-2 space-y-6">
+        <div class="glass p-6 rounded-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold flex items-center">
+                    <i class="fas fa-utensils text-orange-400 mr-3"></i> Digital Menu
+                </h2>
+                <button
+                    class="px-4 py-2 bg-orange-500 hover:bg-orange-600 rounded-lg text-sm font-semibold transition-colors">
+                    <i class="fas fa-plus mr-2"></i> Add Item
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for item in items %}
+                <div
+                    class="bg-slate-800/50 rounded-xl p-4 flex gap-4 border border-slate-700 hover:border-orange-500/50 transition-colors group">
+                    <div class="w-24 h-24 rounded-lg bg-slate-700 overflow-hidden relative">
+                        <!-- Placeholder for image -->
+                        <img src="https://source.unsplash.com/random/200x200/?food,{{ item.category }}"
+                            alt="{{ item.name }}"
+                            class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                        <span class="absolute top-1 right-1 bg-black/60 text-xs px-2 py-0.5 rounded text-white">{{
+                            item.category }}</span>
+                    </div>
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-lg">{{ item.name }}</h3>
+                            <div class="text-2xl font-bold text-orange-400">Rs. {{ item.price }}</div>
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <span
+                                class="px-2 py-1 rounded text-xs {{ 'bg-green-500/20 text-green-400' if item.is_available else 'bg-red-500/20 text-red-400' }}">
+                                {{ 'Available' if item.is_available else 'Out of Stock' }}
+                            </span>
+                            <div class="flex gap-2">
+                                <button
+                                    class="w-8 h-8 rounded-full bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-sm"><i
+                                        class="fas fa-edit"></i></button>
+                                <button
+                                    class="w-8 h-8 rounded-full bg-slate-700 hover:bg-red-900/50 text-red-400 flex items-center justify-center text-sm"><i
+                                        class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-span-2 text-center py-12 text-gray-500">
+                    <i class="fas fa-hamburger text-4xl mb-3 opacity-50"></i>
+                    <p>No items in menu yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Orders Section -->
+    <div class="lg:col-span-1">
+        <div class="glass p-6 rounded-2xl h-full sticky top-6">
+            <h2 class="text-xl font-bold mb-6 flex items-center">
+                <i class="fas fa-receipt text-green-400 mr-3"></i> Live Orders
+                <span class="ml-auto bg-green-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">Live</span>
+            </h2>
+
+            <div class="space-y-4 max-h-[calc(100vh-200px)] overflow-y-auto pr-2 custom-scrollbar">
+                {% for order in orders %}
+                <div
+                    class="bg-slate-800/80 p-4 rounded-xl border-l-4 {{ 'border-yellow-500' if order.status == 'pending' else 'border-green-500' }}">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <span class="text-sm font-bold text-gray-300">#ORD-{{ order.id }}</span>
+                            <div class="text-xs text-gray-500">{{ order.created_at.strftime('%H:%M %p') }}</div>
+                        </div>
+                        <span class="px-2 py-1 rounded text-xs font-bold uppercase
+                            {% if order.status == 'pending' %} bg-yellow-500/20 text-yellow-500
+                            {% elif order.status == 'ready' %} bg-green-500/20 text-green-500
+                            {% else %} bg-slate-700 text-gray-400 {% endif %}">
+                            {{ order.status }}
+                        </span>
+                    </div>
+
+                    <div class="space-y-1 mb-3">
+                        {% for item in order.items %}
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-400">{{ item.quantity }}x {{ item.name }}</span>
+                            <span>{{ item.subtotal }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-700 flex justify-between items-center">
+                        <span class="text-sm font-bold">Total: Rs. {{ order.total_price }}</span>
+                        {% if order.status == 'pending' %}
+                        <button class="px-3 py-1 bg-green-600 hover:bg-green-700 rounded text-xs text-white">
+                            Mark Ready
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <p>No active orders.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

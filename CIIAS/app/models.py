@@ -366,6 +366,29 @@ class Grade(db.Model):
     
     course = db.relationship('Course')
 
+class Enrollment(db.Model):
+    __tablename__ = 'enrollments'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
+    semester = db.Column(db.String(20), default='Fall 2023')
+    grade = db.Column(db.String(5), default='In Progress') # A, B, In Progress
+    
+    user = db.relationship('User', backref='enrollments')
+    course = db.relationship('Course', backref='enrollments')
+
+class ExamSeat(db.Model):
+    __tablename__ = 'exam_seats'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
+    room = db.Column(db.String(50))
+    seat_number = db.Column(db.String(20))
+    exam_time = db.Column(db.DateTime)
+    
+    user = db.relationship('User', backref='exam_seats')
+    course = db.relationship('Course')
+
 class Shuttle(db.Model):
     __tablename__ = 'shuttles'
     id = db.Column(db.Integer, primary_key=True)

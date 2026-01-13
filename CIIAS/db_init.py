@@ -5,7 +5,8 @@ import random
 from app import create_app, db
 from app.models import (
     User, Incident, IncidentComment, SOSAlert, Notification, 
-    Room, Booking, MapNode, MapEdge, EmergencyContact, SafeZone, AuditLog
+    Room, Booking, MapNode, MapEdge, EmergencyContact, SafeZone, AuditLog,
+    Course, Enrollment, ExamSeat, Attendance, Shuttle, CafeteriaItem
 )
 
 app = create_app('development')
@@ -52,6 +53,14 @@ def seed_db():
         # Seed Notifications
         notifications = seed_notifications(users)
         print(f"✓ Created {len(notifications)} notifications")
+
+        # Seed Academic
+        seed_academic(users)
+        print("✓ Created Academic Data (Courses, Enrollments, Attendance)")
+
+        # Seed Logistics
+        seed_logistics()
+        print("✓ Created Logistics Data (Shuttles, Cafeteria)")
 
         print("\n" + "=" * 60)
         print("✅ SSNS Database Ready!")
@@ -342,6 +351,79 @@ def seed_notifications(users):
     
     db.session.commit()
     return notifications
+
+
+    db.session.commit()
+    return notifications
+
+
+def seed_academic(users):
+    """Seed academic data"""
+    if Course.query.first():
+        return
+
+    # Courses
+    courses = [
+        Course(code='CS-301', name='Data Structures', schedule='Mon, Wed 10:00 AM'),
+        Course(code='CS-302', name='Linear Algebra', schedule='Tue, Thu 11:30 AM'),
+        Course(code='SE-401', name='Software Design', schedule='Fri 09:00 AM'),
+        Course(code='CS-405', name='Database Systems', schedule='Mon 02:00 PM')
+    ]
+    db.session.add_all(courses)
+    db.session.commit()
+
+    # Enrollments & Grades (for student user)
+    student = next((u for u in users if u.role == 'student'), None)
+    if student:
+        enrollments = [
+            Enrollment(user_id=student.id, course_id=courses[0].id, grade='A', semester='Fall 2023'),
+            Enrollment(user_id=student.id, course_id=courses[1].id, grade='A-', semester='Fall 2023'),
+            Enrollment(user_id=student.id, course_id=courses[2].id, grade='B+', semester='Fall 2023'),
+            Enrollment(user_id=student.id, course_id=courses[3].id, grade='In Progress', semester='Spring 2024')
+        ]
+        db.session.add_all(enrollments)
+        
+        # Attendance
+        today = datetime.today().date()
+        att = [
+            Attendance(student_id=student.id, course_id=courses[0].id, status='Present', date=today-timedelta(days=1)),
+            Attendance(student_id=student.id, course_id=courses[0].id, status='Present', date=today-timedelta(days=3)),
+            Attendance(student_id=student.id, course_id=courses[0].id, status='Absent', date=today-timedelta(days=5)),
+            Attendance(student_id=student.id, course_id=courses[3].id, status='Present', date=today-timedelta(days=2)),
+        ]
+        db.session.add_all(att)
+
+        # Exam Seat
+        seat = ExamSeat(
+            user_id=student.id, 
+            course_id=courses[3].id, # Database Systems
+            room='Exam Hall A', 
+            seat_number='R-12', 
+            exam_time=datetime.utcnow() + timedelta(days=10)
+        )
+        db.session.add(seat)
+        
+    db.session.commit()
+
+def seed_logistics():
+    """Seed shuttles and cafeteria"""
+    if not Shuttle.query.first():
+        shuttles = [
+            Shuttle(plate_number='ICT-1234', route_name='Campus Loop Red', status='Active', current_lat=33.5651, current_lng=73.1584),
+            Shuttle(plate_number='ICT-5678', route_name='Hostel Express', status='Active', current_lat=33.5670, current_lng=73.1590),
+        ]
+        db.session.add_all(shuttles)
+
+    if not CafeteriaItem.query.first():
+        items = [
+            CafeteriaItem(name='Chicken Burger', price=350.0, category='Fast Food', image_url='burger.jpg'),
+            CafeteriaItem(name='Club Sandwich', price=250.0, category='Snacks', image_url='sandwich.jpg'),
+            CafeteriaItem(name='Fresh Juice', price=150.0, category='Drinks', image_url='juice.jpg'),
+            CafeteriaItem(name='Biryani', price=400.0, category='Meals', image_url='biryani.jpg'),
+        ]
+        db.session.add_all(items)
+    
+    db.session.commit()
 
 
 if __name__ == '__main__':

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIIAS - Integrated Campus Intelligence</title>
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9', // Sky 500
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        },
+                        dark: '#0B1121', // Deep Navy
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-nav {
+            background: rgba(11, 17, 33, 0.85);
+            backdrop-filter: blur(12px);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-gradient {
+            background: radial-gradient(circle at top right, #0ea5e9, transparent 40%),
+                radial-gradient(circle at bottom left, #6366f1, transparent 40%);
+        }
+    </style>
+</head>
+
+<body class="bg-dark text-white font-sans antialiased overflow-x-hidden">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 glass-nav border-b border-white/10 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                        <i class="fas fa-shield-alt text-xl text-white"></i>
+                    </div>
+                    <span class="text-2xl font-bold tracking-tight">CIIAS</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features"
+                        class="text-sm font-medium text-gray-300 hover:text-white transition-colors">Features</a>
+                    <a href="#solutions"
+                        class="text-sm font-medium text-gray-300 hover:text-white transition-colors">Solutions</a>
+                    <a href="#about"
+                        class="text-sm font-medium text-gray-300 hover:text-white transition-colors">About</a>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="{{ url_for('web.login') }}"
+                        class="text-sm font-medium text-white hover:text-brand-400 transition-colors">Log in</a>
+                    <a href="{{ url_for('web.register') }}"
+                        class="hidden md:inline-flex items-center justify-center px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 bg-white/10 rounded-full hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-white">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <!-- Background Effects -->
+        <div class="absolute inset-0 bg-dark hero-gradient opacity-30"></div>
+
+        <div class="relative max-w-7xl mx-auto px-6 lg:px-8 text-center" data-aos="fade-up">
+            <div
+                class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-500 text-sm font-medium mb-8">
+                <span class="relative flex h-2 w-2">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
+                </span>
+                v2.0 Now Live: Smart Campus Evolution
+            </div>
+
+            <h1 class="text-5xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight">
+                One Platform.<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-400">Total Campus
+                    Intelligence.</span>
+            </h1>
+
+            <p class="max-w-2xl mx-auto text-lg text-gray-400 mb-10">
+                The ultimate companion for students, faculty, and administration. Seamlessly integrating academic
+                success, campus safety, and daily logistics.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="{{ url_for('web.login') }}"
+                    class="w-full sm:w-auto px-8 py-4 text-base font-bold text-white transition-all duration-200 bg-brand-600 rounded-full hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-500/30 transform hover:-translate-y-1">
+                    Launch Dashboard
+                </a>
+                <button
+                    class="w-full sm:w-auto px-8 py-4 text-base font-bold text-white transition-all duration-200 glass-card rounded-full hover:bg-white/5 border-white/20">
+                    <i class="fab fa-android mr-2 text-green-400"></i> Download App
+                </button>
+            </div>
+
+            <!-- Stats/Floaters -->
+            <div class="mt-20 grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto border-t border-white/10 pt-10">
+                <div data-aos="fade-up" data-aos-delay="100">
+                    <div class="text-3xl font-bold text-white">100%</div>
+                    <div class="text-sm text-gray-500 mt-1">Digital Workflows</div>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="200">
+                    <div class="text-3xl font-bold text-white">&lt;2min</div>
+                    <div class="text-sm text-gray-500 mt-1">Emergency Response</div>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="300">
+                    <div class="text-3xl font-bold text-white">AI</div>
+                    <div class="text-sm text-gray-500 mt-1">Powered Insights</div>
+                </div>
+                <div data-aos="fade-up" data-aos-delay="400">
+                    <div class="text-3xl font-bold text-white">24/7</div>
+                    <div class="text-sm text-gray-500 mt-1">Campus Safety</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Grid -->
+    <section id="features" class="py-24 bg-dark relative">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-3xl lg:text-4xl font-bold mb-4">Everything You Need</h2>
+                <p class="text-gray-400">A unified ecosystem connecting every aspect of university life.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Academic Card -->
+                <div class="glass-card p-8 rounded-3xl hover:bg-white/5 transition-all duration-300 group"
+                    data-aos="fade-up" data-aos-delay="100">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-graduation-cap text-2xl text-blue-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Academic Success</h3>
+                    <p class="text-gray-400 leading-relaxed mb-6">
+                        Real-time GPA tracking, attendance monitoring, and automated exam scheduling. Never miss a
+                        deadline again.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Live Results
+                            Portal</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Course Resources
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Safety Card -->
+                <div class="glass-card p-8 rounded-3xl hover:bg-white/5 transition-all duration-300 group"
+                    data-aos="fade-up" data-aos-delay="200">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-red-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-shield-virus text-2xl text-red-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Advanced Safety</h3>
+                    <p class="text-gray-400 leading-relaxed mb-6">
+                        AI-powered incident detection and one-tap SOS alerts. Keeping the campus secure with predictive
+                        intelligence.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Geo-fenced SOS
+                        </li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Live Map Tracking
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Logistics Card -->
+                <div class="glass-card p-8 rounded-3xl hover:bg-white/5 transition-all duration-300 group"
+                    data-aos="fade-up" data-aos-delay="300">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-bus text-2xl text-purple-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Smart Logistics</h3>
+                    <p class="text-gray-400 leading-relaxed mb-6">
+                        Live shuttle tracking, cafeteria pre-ordering, and room booking. Optimizing your daily campus
+                        routine.
+                    </p>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Shuttle GPS</li>
+                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Digital Cafeteria
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- App Showcase -->
+    <section class="py-24 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-dark to-brand-900/20"></div>
+        <div class="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+            <div class="glass-card rounded-[3rem] p-12 lg:p-20 flex flex-col lg:flex-row items-center gap-16">
+                <div class="lg:w-1/2" data-aos="fade-right">
+                    <h2 class="text-4xl lg:text-5xl font-bold mb-6">Experience it on Mobile</h2>
+                    <p class="text-lg text-gray-400 mb-8">
+                        The full power of CIIAS in your pocket. Get real-time notifications, navigate with AR, and stay
+                        connected wherever you are.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button
+                            class="flex items-center justify-center px-6 py-3 bg-black rounded-xl border border-white/10 hover:bg-gray-900 transition-colors">
+                            <i class="fab fa-apple text-3xl mr-3"></i>
+                            <div class="text-left">
+                                <div class="text-xs text-gray-400">Download on the</div>
+                                <div class="text-lg font-bold font-sans">App Store</div>
+                            </div>
+                        </button>
+                        <button
+                            class="flex items-center justify-center px-6 py-3 bg-black rounded-xl border border-white/10 hover:bg-gray-900 transition-colors">
+                            <i class="fab fa-google-play text-3xl mr-3 text-green-400"></i>
+                            <div class="text-left">
+                                <div class="text-xs text-gray-400">GET IT ON</div>
+                                <div class="text-lg font-bold font-sans">Google Play</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                <div class="lg:w-1/2 relative" data-aos="fade-left">
+                    <div class="absolute -inset-4 bg-brand-500/30 blur-3xl rounded-full opacity-50"></div>
+                    <!-- Mockup Placeholder -->
+                    <div
+                        class="relative bg-black rounded-[2.5rem] border-8 border-gray-800 p-2 shadow-2xl mx-auto max-w-[300px]">
+                        <div class="h-[600px] w-full bg-gray-900 rounded-[2rem] overflow-hidden relative">
+                            <!-- Screen Content Mock -->
+                            <div class="h-full w-full bg-cover bg-center opacity-80"
+                                style="background-image: url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80');">
+                            </div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent">
+                            </div>
+                            <div class="absolute bottom-8 left-6 right-6">
+                                <div class="text-white font-bold text-xl">Welcome back, Hanzala</div>
+                                <div class="text-gray-300 text-sm mt-1">GPA: 3.5 • Next Class: 10:00 AM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-white/10 pt-16 pb-8 bg-dark">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <div class="flex items-center gap-2 mb-4 md:mb-0">
+                    <i class="fas fa-shield-alt text-brand-500"></i>
+                    <span class="font-bold text-xl">CIIAS</span>
+                </div>
+                <div class="text-gray-500 text-sm">
+                    &copy; 2026 Campus Integrated Intelligence. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 50
+        });
+    </script>
+</body>
+
+</html>

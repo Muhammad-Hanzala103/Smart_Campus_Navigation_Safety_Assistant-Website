@@ -1,0 +1,98 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}Financial Hub{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+    <!-- Wallet Card -->
+    <div class="md:col-span-1 space-y-6">
+        <div class="glass p-8 rounded-3xl relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600/30 to-purple-600/30 z-0"></div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <p class="text-sm text-gray-300 uppercase tracking-wider">Campus Wallet</p>
+                        <h2 class="text-4xl font-bold mt-2">Rs. {{ wallet.balance }}</h2>
+                    </div>
+                    <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-wallet text-xl"></i>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <button
+                        class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-plus mr-2"></i> Top Up
+                    </button>
+                    <button class="flex-1 py-2 bg-white/10 hover:bg-white/20 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-history mr-2"></i> History
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="glass p-4 rounded-xl text-center">
+                <div class="text-2xl font-bold text-red-400">0</div>
+                <div class="text-xs text-gray-500">Pending Dues</div>
+            </div>
+            <div class="glass p-4 rounded-xl text-center">
+                <div class="text-2xl font-bold text-green-400">100%</div>
+                <div class="text-xs text-gray-500">Paid Status</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fee Challans -->
+    <div class="md:col-span-2">
+        <div class="glass p-6 rounded-2xl h-full">
+            <h3 class="text-xl font-bold mb-6 flex items-center">
+                <i class="fas fa-file-invoice-dollar text-green-400 mr-3"></i> Fee Challans
+            </h3>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-gray-400 border-b border-slate-700">
+                            <th class="py-3 px-4">Semester</th>
+                            <th class="py-3 px-4">Due Date</th>
+                            <th class="py-3 px-4">Amount</th>
+                            <th class="py-3 px-4">Status</th>
+                            <th class="py-3 px-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        {% for challan in challans %}
+                        <tr class="border-b border-slate-800 hover:bg-slate-700/30 transition-colors">
+                            <td class="py-3 px-4 font-medium">{{ challan.semester }}</td>
+                            <td class="py-3 px-4 text-gray-400">{{ challan.due_date.strftime('%d %b, %Y') }}</td>
+                            <td class="py-3 px-4 font-bold">Rs. {{ challan.amount }}</td>
+                            <td class="py-3 px-4">
+                                <span class="px-2 py-1 rounded-full text-xs font-bold uppercase
+                                    {% if challan.status == 'paid' %} bg-green-500/20 text-green-400
+                                    {% else %} bg-red-500/20 text-red-400 {% endif %}">
+                                    {{ challan.status }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-right">
+                                <button class="text-indigo-400 hover:text-white transition-colors">
+                                    <i class="fas fa-download"></i> PDF
+                                </button>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="py-8 text-center text-gray-500">
+                                No fee records found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

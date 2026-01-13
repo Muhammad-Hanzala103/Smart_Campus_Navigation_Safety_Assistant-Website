@@ -255,4 +255,41 @@ def incident_stats():
 
 @web_bp.route('/')
 def index():
-    return redirect(url_for('web.login'))
+    if 'user_id' in session:
+        return redirect(url_for('web.dashboard'))
+    return render_template('index.html')
+
+# ============== CAFETERIA MODULE ==============
+from app.models import CafeteriaItem, CafeteriaOrder
+@web_bp.route('/cafeteria')
+@login_required
+def cafeteria_dashboard():
+    items = CafeteriaItem.query.all()
+    # For demo, fetch recent orders
+    orders = CafeteriaOrder.query.order_by(CafeteriaOrder.created_at.desc()).limit(10).all()
+    return render_template('cafeteria_dashboard.html', items=items, orders=orders)
+
+# ============== FINANCIAL MODULE ==============
+from app.models import Wallet, FeeChallan
+@web_bp.route('/financial')
+@login_required
+def financial_dashboard():
+    # Ensure user has a wallet
+    wallet = Wallet.query.get(session['user_id'])
+    if not wallet:
+        wallet = Wallet(user_id=session['user_id'], balance=0)
+        db.session.add(wallet)
+        db.session.commit()
+    
+    challans = FeeChallan.query.filter_by(user_id=session['user_id']).all()
+    return render_template('financial_dashboard.html', wallet=wallet, challans=challans)
+
+# ============== CHAT MODULE ==============
+from app.models import ChatMessage
+@web_bp.route('/chat')
+@login_required
+def chat_dashboard():
+    # Get recent contacts (users who have chatted with current user)
+    # Simplified: Get all users except current
+    users = User.query.filter(User.id != session['user_id']).all()
+    return render_template('chat.html', contacts=users)
