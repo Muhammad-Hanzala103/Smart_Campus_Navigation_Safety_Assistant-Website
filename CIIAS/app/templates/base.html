@@ -4,6 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Campus Integrated Intelligence & Analytics System (CIIAS). The ultimate smart campus solution for safety, academics, and logistics.">
+    <meta name="keywords"
+        content="Smart Campus, University Safety, Student Portal, Faculty Dashboard, Campus Logistics">
+    <meta name="author" content="Muhammad Hanzala">
+    <meta property="og:title" content="CIIAS - Integrated Campus Intelligence">
+    <meta property="og:description"
+        content="One Platform. Total Campus Intelligence. Safety, Academics, and Logistics unified.">
+    <meta property="og:image" content="{{ url_for('static', filename='img/og_image.jpg') }}">
     <title>CIIAS - {% block title %}Dashboard{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -84,6 +93,13 @@
     {% endwith %}
 
     {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer
+        style="text-align: center; padding: 20px; color: #6b7280; font-size: 0.8rem; margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.1);">
+        &copy; 2026 <strong>Muhammad Hanzala</strong>. All Rights Reserved. <br>
+        <span style="opacity: 0.7;">Industrial Grade Smart Campus Solution.</span>
+    </footer>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
