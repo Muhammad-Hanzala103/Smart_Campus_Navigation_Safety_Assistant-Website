@@ -1,0 +1,30 @@
+{% extends "base_dashboard.html" %}
+
+{% block title %}500 - System Breach{% endblock %}
+
+{% block content %}
+<div class="h-[70vh] flex flex-col items-center justify-center text-center page-enter">
+    <div class="relative mb-12" data-aos="zoom-in">
+        <div class="text-[12rem] font-black opacity-10 text-rose-500 leading-none select-none">500</div>
+        <div class="absolute inset-0 flex items-center justify-center">
+            <i class="fas fa-biohazard text-8xl text-rose-500 animate-bounce"></i>
+        </div>
+    </div>
+
+    <h1 class="text-4xl font-black text-white mb-4 tracking-tight">System Integrity Failure</h1>
+    <p class="text-gray-400 max-w-md mx-auto mb-8">
+        Critical error detected in the neural network. Our engineers have been alerted and are containing the breach.
+    </p>
+
+    <div class="flex gap-4">
+        <a href="{{ url_for('web.dashboard') }}"
+            class="px-8 py-3 bg-rose-500 hover:bg-rose-600 rounded-2xl font-bold transition-all transform hover:scale-105">
+            Emergency Reboot
+        </a>
+        <a href="mailto:admin@ciias.campus"
+            class="px-8 py-3 bg-white/5 hover:bg-white/10 rounded-2xl font-bold border border-white/10 transition-all">
+            Report Incident
+        </a>
+    </div>
+</div>
+{% endblock %}

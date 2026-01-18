@@ -245,7 +245,15 @@ def faculty_dashboard():
 @login_required
 def transport_dashboard():
     shuttles = Shuttle.query.all()
-    return render_template('transport_dashboard.html', shuttles=shuttles) # Pass shuttle data
+    # Convert manually to avoid serialization issues in template
+    shuttles_json = []
+    for s in shuttles:
+        shuttles_json.append(s.to_dict())
+    
+    import json
+    return render_template('transport_dashboard.html', 
+                           shuttles=shuttles, 
+                           shuttles_json=json.dumps(shuttles_json))
 
 # ============== LIBRARY MODULE ==============
 from app.models import Book
@@ -431,6 +439,26 @@ def incident_stats():
         'medium': Incident.query.filter_by(ai_severity='MEDIUM').count(),
         'low': Incident.query.filter_by(ai_severity='LOW').count()
     })
+
+@web_bp.route('/health')
+def health_check():
+    """System Health Check for Monitoring"""
+    try:
+        # Check Database
+        db.session.execute('SELECT 1')
+        return jsonify({
+            'status': 'healthy',
+            'timestamp': datetime.utcnow().isoformat(),
+            'services': {
+                'database': 'connected',
+                'storage': 'available'
+            }
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e)
+        }), 500
 
 @web_bp.route('/')
 def index():

@@ -65,7 +65,7 @@
     const shuttleMarkers = {};
 
     // Initial Load
-    const initialShuttles = {{ shuttles| tojson if shuttles else '[]' }};
+    const initialShuttles = {{ shuttles_json | safe if shuttles_json else '[]' }};
     initialShuttles.forEach(updateShuttleMarker);
 
     // Real-time Updates

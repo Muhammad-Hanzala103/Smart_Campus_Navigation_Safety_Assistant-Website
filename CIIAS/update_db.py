@@ -10,16 +10,44 @@ with app.app_context():
     
     # 0. MIGRATE EXISTING TABLES MANUALLY (SQLite doesn't support easy ALTER ADD COLUMN if constrained, but simple fields work)
     try:
-        # Check if column exists by trying to select it. If error, add it.
         with db.engine.connect() as conn:
+            # Fix MapNodes
             try:
                 conn.execute(text("SELECT altitude FROM map_nodes LIMIT 1"))
             except Exception:
                 print("Column 'altitude' missing in map_nodes. Adding it...")
                 conn.execute(text("ALTER TABLE map_nodes ADD COLUMN altitude FLOAT DEFAULT 0.0"))
-                conn.commit()
+            
+            # Fix User 2FA Columns
+            user_columns = [
+                ("totp_secret", "VARCHAR(32)"),
+                ("is_2fa_enabled", "BOOLEAN DEFAULT 0"),
+                ("twofactor_method", "VARCHAR(20) DEFAULT 'email'"),
+                ("otp_code", "VARCHAR(6)"),
+                ("otp_expiry", "DATETIME"),
+                ("backup_codes", "TEXT")
+            ]
+            
+            for col_name, col_type in user_columns:
+                try:
+                    conn.execute(text(f"SELECT {col_name} FROM users LIMIT 1"))
+                except Exception:
+                    print(f"Column '{col_name}' missing in users. Adding it...")
+                    conn.execute(text(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}"))
+            
+            # 1. ADD INDEXES
+            print("Optimizing indexes for scale...")
+            try:
+                conn.execute(text("CREATE INDEX idx_incidents_ai_severity ON incidents(ai_severity)"))
+            except Exception: pass # Already exists
+            
+            try:
+                conn.execute(text("CREATE INDEX idx_audit_logs_timestamp ON audit_logs(timestamp)"))
+            except Exception: pass
+            
+            conn.commit()
     except Exception as e:
-        print(f"Schema check warning: {e}")
+        print(f"Schema check error/warning: {e}")
 
     print("Creating new tables...")
     db.create_all()

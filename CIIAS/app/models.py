@@ -92,7 +92,7 @@ class Incident(db.Model):
     ai_category = db.Column(db.String(50))
     ai_confidence = db.Column(db.Float)
     ai_labels = db.Column(db.Text)
-    ai_severity = db.Column(db.String(20))
+    ai_severity = db.Column(db.String(20), index=True)
     ai_recommendation = db.Column(db.Text)
     ai_analyzed_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -353,12 +353,14 @@ class AuditLog(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     action = db.Column(db.String(64))
     details = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
     def to_dict(self):
         return {
             'id': self.id,
             'user_id': self.user_id,
+            'action': self.action,
+            'details': self.details,
             'timestamp': self.timestamp.isoformat() if self.timestamp else None
         }
 

@@ -99,6 +99,15 @@ def create_app(config_name='default'):
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com https://cdn.socket.io; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https:;"
         return response
+
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        return render_template('500.html'), 500
 
     return app
