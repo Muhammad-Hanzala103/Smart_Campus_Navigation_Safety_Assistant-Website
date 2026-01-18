@@ -1,45 +1,98 @@
-{% extends "base.html" %}
-{% block title %}Analytics{% endblock %}
+{% extends "base_dashboard.html" %}
+{% block title %}Analytics Intelligence{% endblock %}
 {% block content %}
-<div class="page-container">
-    <div class="page-header">
-        <h1>Analytics Dashboard</h1>
-        <p>Comprehensive incident and system analytics</p>
+<div class="max-w-7xl mx-auto page-enter">
+    <div class="mb-8" data-aos="fade-down">
+        <h1 class="text-3xl font-bold text-white tracking-tight">Intelligence Dashboard</h1>
+        <p class="text-gray-400 mt-1">Advanced telemetry and predictive campus analytics</p>
     </div>
 
-    <div class="status-grid" style="grid-template-columns:repeat(4,1fr);">
-        <div class="status-card">
-            <h3><i class="fas fa-file-alt" style="color:var(--accent);"></i> Total Reports</h3>
-            <div class="quick-stat" id="totalReports">-</div>
+    <!-- Stats Matrix -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="glass-card p-6 rounded-3xl" data-aos="zoom-in" data-aos-delay="100">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
+                    <i class="fas fa-database text-xl"></i>
+                </div>
+                <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">+12%</span>
+            </div>
+            <div class="text-3xl font-black text-white" id="totalReports">0</div>
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">Total Telemetry</div>
         </div>
-        <div class="status-card">
-            <h3><i class="fas fa-exclamation-circle" style="color:var(--danger);"></i> High Severity</h3>
-            <div class="quick-stat" id="highSeverity" style="color:var(--danger);">-</div>
+
+        <div class="glass-card p-6 rounded-3xl" data-aos="zoom-in" data-aos-delay="200">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center text-rose-500">
+                    <i class="fas fa-radiation text-xl"></i>
+                </div>
+                <span class="text-[10px] font-bold text-rose-500 bg-rose-500/10 px-2 py-1 rounded-lg">CRITICAL</span>
+            </div>
+            <div class="text-3xl font-black text-white" id="highSeverity">0</div>
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">High Risk Nodes</div>
         </div>
-        <div class="status-card">
-            <h3><i class="fas fa-clock" style="color:var(--warning);"></i> Pending</h3>
-            <div class="quick-stat" id="pendingCount">-</div>
+
+        <div class="glass-card p-6 rounded-3xl" data-aos="zoom-in" data-aos-delay="300">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-500">
+                    <i class="fas fa-microchip text-xl"></i>
+                </div>
+                <span class="text-[10px] font-bold text-gray-500">ACTIVE</span>
+            </div>
+            <div class="text-3xl font-black text-white" id="pendingCount">0</div>
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">In-Process Logic</div>
         </div>
-        <div class="status-card">
-            <h3><i class="fas fa-check-circle" style="color:var(--success);"></i> Resolved</h3>
-            <div class="quick-stat" id="resolvedCount" style="color:var(--success);">-</div>
+
+        <div class="glass-card p-6 rounded-3xl" data-aos="zoom-in" data-aos-delay="400">
+            <div class="flex items-center justify-between mb-4">
+                <div class="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-500">
+                    <i class="fas fa-shield-check text-xl"></i>
+                </div>
+                <span
+                    class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-lg">SECURE</span>
+            </div>
+            <div class="text-3xl font-black text-white" id="resolvedCount">0</div>
+            <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">Resolved Threats</div>
         </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;">
-        <div class="info-card">
-            <h3>Incidents by Status</h3>
-            <canvas id="statusChart" height="250"></canvas>
+    <div class="grid lg:grid-cols-2 gap-8 mb-8">
+        <!-- Distribution Charts -->
+        <div class="glass-card p-8 rounded-[2.5rem]" data-aos="fade-right">
+            <h3 class="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                <i class="fas fa-chart-pie text-primary"></i> Lifecycle Distribution
+            </h3>
+            <div class="h-[300px] relative">
+                <canvas id="statusChart"></canvas>
+            </div>
         </div>
-        <div class="info-card">
-            <h3>Incidents by Severity</h3>
-            <canvas id="severityChart" height="250"></canvas>
+
+        <div class="glass-card p-8 rounded-[2.5rem]" data-aos="fade-left">
+            <h3 class="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                <i class="fas fa-shield-virus text-rose-500"></i> Risk Assessment
+            </h3>
+            <div class="h-[300px] relative">
+                <canvas id="severityChart"></canvas>
+            </div>
         </div>
     </div>
 
-    <div class="info-card" style="margin-top:1.5rem;">
-        <h3>Weekly Trend</h3>
-        <canvas id="trendChart" height="100"></canvas>
+    <!-- Trend Analysis -->
+    <div class="glass-card p-10 rounded-[2.5rem] mb-8" data-aos="fade-up">
+        <div class="flex justify-between items-center mb-10">
+            <div>
+                <h3 class="text-xl font-bold text-white">Temporal Trend Analysis</h3>
+                <p class="text-gray-500 text-xs uppercase tracking-widest font-bold mt-1">Weekly incident frequency
+                    spectrum</p>
+            </div>
+            <div class="flex gap-2">
+                <button
+                    class="px-4 py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-gray-400 transition-all border border-white/5">EXPORT
+                    DATA</button>
+            </div>
+        </div>
+        <div class="h-[200px] relative">
+            <canvas id="trendChart"></canvas>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -54,49 +107,92 @@
             document.getElementById('pendingCount').textContent = data.open + data.in_progress;
             document.getElementById('resolvedCount').textContent = data.resolved;
 
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', font: { family: 'Outfit', weight: 'bold' }, padding: 20 }
+                    }
+                },
+                cutout: '75%'
+            };
+
             // Status Chart
             new Chart(document.getElementById('statusChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['Open', 'In Progress', 'Resolved'],
+                    labels: ['OPEN', 'ACTIVE', 'RESOLVED'],
                     datasets: [{
                         data: [data.open, data.in_progress, data.resolved],
-                        backgroundColor: ['#f59e0b', '#3b82f6', '#22c55e']
+                        backgroundColor: [
+                            'rgba(245, 158, 11, 0.4)',
+                            'rgba(59, 130, 246, 0.4)',
+                            'rgba(16, 185, 129, 0.4)'
+                        ],
+                        borderColor: ['#f59e0b', '#3b82f6', '#10b981'],
+                        borderWidth: 2,
+                        hoverOffset: 20
                     }]
                 },
-                options: { plugins: { legend: { position: 'bottom' } } }
+                options: chartOptions
             });
 
             // Severity Chart
             new Chart(document.getElementById('severityChart'), {
                 type: 'doughnut',
                 data: {
-                    labels: ['High', 'Medium', 'Low'],
+                    labels: ['HIGH', 'MEDIUM', 'LOW'],
                     datasets: [{
                         data: [data.high, data.medium, data.low],
-                        backgroundColor: ['#ef4444', '#f59e0b', '#22c55e']
+                        backgroundColor: [
+                            'rgba(244, 63, 94, 0.4)',
+                            'rgba(245, 158, 11, 0.4)',
+                            'rgba(16, 185, 129, 0.4)'
+                        ],
+                        borderColor: ['#f43f5e', '#f59e0b', '#10b981'],
+                        borderWidth: 2,
+                        hoverOffset: 20
                     }]
                 },
-                options: { plugins: { legend: { position: 'bottom' } } }
+                options: chartOptions
             });
 
             // Trend Chart
             new Chart(document.getElementById('trendChart'), {
                 type: 'line',
                 data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    labels: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
                     datasets: [{
-                        label: 'Incidents',
+                        label: 'INCIDENTS',
                         data: [3, 5, 2, 8, 4, 1, 2],
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59,130,246,0.1)',
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        borderWidth: 4,
+                        pointRadius: 6,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#6366f1',
+                        pointBorderWidth: 3
                     }]
                 },
                 options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true } }
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: 'rgba(255,255,255,0.05)' },
+                            ticks: { color: '#64748b', font: { family: 'Outfit' } }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#64748b', font: { family: 'Outfit', weight: 'bold' } }
+                        }
+                    }
                 }
             });
         });

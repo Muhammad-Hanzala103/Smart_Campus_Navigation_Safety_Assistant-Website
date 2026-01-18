@@ -1,103 +1,138 @@
-{% extends "base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% extends "base_dashboard.html" %}
+{% block title %}Command Center{% endblock %}
 {% block content %}
-<div class="page-container">
-    <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+<div class="max-w-7xl mx-auto page-enter">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8" data-aos="fade-down">
         <div>
-            <h1>Command Center</h1>
-            <p>KICSIT Security Intelligence Overview</p>
+            <h1 class="text-3xl font-bold text-white tracking-tight">Command Center</h1>
+            <p class="text-gray-400 mt-1">Real-time KICSIT Intelligence Overview</p>
         </div>
-        <div style="display:flex;align-items:center;gap:0.5rem;">
-            <span class="legend-dot low"></span>
-            <span style="color:var(--success);font-weight:600;">System Online</span>
-        </div>
-    </div>
-
-    <!-- Stats Cards -->
-    <div class="status-grid" style="grid-template-columns:repeat(4,1fr);">
-        <div class="status-card" style="display:flex;align-items:center;gap:1rem;">
-            <div
-                style="width:48px;height:48px;background:#fee2e2;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                <span style="color:#ef4444;font-size:1.5rem;">⚠️</span>
-            </div>
-            <div>
-                <div class="quick-stat" style="font-size:2rem;">{{ stats.high_risk }}</div>
-                <div class="quick-stat-label">High Risk</div>
-            </div>
-        </div>
-        <div class="status-card" style="display:flex;align-items:center;gap:1rem;">
-            <div
-                style="width:48px;height:48px;background:#fef3c7;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                <span style="color:#f59e0b;font-size:1.5rem;">⏱️</span>
-            </div>
-            <div>
-                <div class="quick-stat" style="font-size:2rem;">{{ stats.active_cases }}</div>
-                <div class="quick-stat-label">Active Cases</div>
-            </div>
-        </div>
-        <div class="status-card" style="display:flex;align-items:center;gap:1rem;">
-            <div
-                style="width:48px;height:48px;background:#dbeafe;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                <span style="color:#3b82f6;font-size:1.5rem;">📋</span>
-            </div>
-            <div>
-                <div class="quick-stat" style="font-size:2rem;">{{ stats.total_reports }}</div>
-                <div class="quick-stat-label">Total Reports</div>
-            </div>
-        </div>
-        <div class="status-card" style="display:flex;align-items:center;gap:1rem;">
-            <div
-                style="width:48px;height:48px;background:#dcfce7;border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                <span style="color:#22c55e;font-size:1.5rem;">✓</span>
-            </div>
-            <div>
-                <div class="quick-stat" style="font-size:2rem;color:var(--success);">Secure</div>
-                <div class="quick-stat-label">Campus Status</div>
-            </div>
+        <div class="flex items-center gap-3 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span class="text-xs font-bold text-emerald-500 uppercase tracking-widest">Global Watch Active</span>
         </div>
     </div>
 
-    <!-- Charts & Alerts -->
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-top:1.5rem;">
-        <div class="info-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-                <h3 style="border:none;padding:0;margin:0;">Incident Trends (7 Days)</h3>
-                <div style="display:flex;gap:1rem;font-size:0.85rem;">
-                    <span><span class="legend-dot high" style="display:inline-block;margin-right:0.25rem;"></span> High
-                        Risk</span>
-                    <span><span class="legend-dot medium" style="display:inline-block;margin-right:0.25rem;"></span>
-                        Regular</span>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="glass-card p-6 rounded-3xl group" data-aos="zoom-in" data-aos-delay="100">
+            <div class="flex items-center gap-4 mb-4">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-rose-500/20 flex items-center justify-center text-rose-500 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-biohazard text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-white">{{ stats.high_risk }}</div>
+                    <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">High Risk Threats</div>
                 </div>
             </div>
-            <canvas id="trendChart" height="200"></canvas>
+            <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-rose-500 h-full w-2/3"></div>
+            </div>
         </div>
 
-        <div class="info-card">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-                <h3 style="border:none;padding:0;margin:0;">Recent Alerts</h3>
+        <div class="glass-card p-6 rounded-3xl group" data-aos="zoom-in" data-aos-delay="200">
+            <div class="flex items-center gap-4 mb-4">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-satellite-dish text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-white">{{ stats.active_cases }}</div>
+                    <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Active Operations</div>
+                </div>
+            </div>
+            <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-amber-500 h-full w-1/2"></div>
+            </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl group" data-aos="zoom-in" data-aos-delay="300">
+            <div class="flex items-center gap-4 mb-4">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                    <i class="fas fa-server text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-white">{{ stats.total_reports }}</div>
+                    <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Protocol Logs</div>
+                </div>
+            </div>
+            <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-primary h-full w-3/4"></div>
+            </div>
+        </div>
+
+        <div class="glass-card p-6 rounded-3xl group" data-aos="zoom-in" data-aos-delay="400">
+            <div class="flex items-center gap-4 mb-4">
+                <div
+                    class="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                    <i class="fas fa-shield-alt text-xl"></i>
+                </div>
+                <div>
+                    <div class="text-2xl font-black text-emerald-400 uppercase">SECURE</div>
+                    <div class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Campus Integrity</div>
+                </div>
+            </div>
+            <div class="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-emerald-500 h-full w-full"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics & Activity -->
+    <div class="grid lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 glass-card p-8 rounded-[2.5rem]" data-aos="fade-right">
+            <div class="flex justify-between items-center mb-8">
+                <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                    <i class="fas fa-chart-line text-primary"></i> Incident Intelligence
+                </h3>
+                <div class="flex gap-4 text-[10px] font-bold tracking-widest">
+                    <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-500"></span> HIGH
+                        RISK</span>
+                    <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-primary"></span>
+                        REGULAR</span>
+                </div>
+            </div>
+            <div class="h-[300px] w-full">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="lg:col-span-1 glass-card p-8 rounded-[2.5rem]" data-aos="fade-left">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-bold text-white">Neural Alerts</h3>
                 <a href="{{ url_for('web.incidents') }}"
-                    style="color:var(--accent);text-decoration:none;font-size:0.85rem;">View All →</a>
+                    class="text-[10px] font-bold text-primary hover:text-white transition-colors uppercase tracking-widest">View
+                    All</a>
             </div>
 
-            {% for inc in recent_incidents %}
-            <div
-                style="display:flex;align-items:flex-start;gap:0.75rem;padding:0.75rem 0;border-bottom:1px solid #f3f4f6;">
-                <span
-                    style="color:{{ 'var(--danger)' if inc.ai_severity == 'HIGH' else 'var(--accent)' if inc.ai_severity == 'MEDIUM' else 'var(--text-light)' }};">{{
-                    '!' if inc.ai_severity == 'HIGH' else '•' }}</span>
-                <div style="flex:1;">
-                    <div style="font-weight:600;">{{ inc.category }}</div>
-                    <div style="font-size:0.85rem;color:var(--text-light);">{{ inc.description[:30] }}</div>
-                    <div style="font-size:0.75rem;color:var(--text-light);">{{ inc.created_at.strftime('%b %d, %H:%M')
-                        }}</div>
+            <div class="space-y-4">
+                {% for inc in recent_incidents %}
+                <div class="p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all group">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-sm font-bold text-white">{{ inc.category }}</span>
+                        {% if inc.ai_severity == 'HIGH' %}
+                        <span
+                            class="px-2 py-0.5 bg-rose-500/10 text-rose-500 rounded text-[8px] font-black border border-rose-500/20">CRITICAL</span>
+                        {% else %}
+                        <span
+                            class="px-2 py-0.5 bg-amber-500/10 text-amber-500 rounded text-[8px] font-black border border-amber-500/20">{{
+                            inc.ai_severity }}</span>
+                        {% endif %}
+                    </div>
+                    <p class="text-xs text-gray-400 mb-2 truncate">{{ inc.description }}</p>
+                    <div class="text-[9px] font-bold text-gray-600 flex items-center gap-2">
+                        <i class="fas fa-clock"></i> {{ inc.created_at.strftime('%H:%M • %b %d') }}
+                    </div>
                 </div>
-                <span
-                    class="badge badge-{{ 'danger' if inc.ai_severity == 'HIGH' else 'warning' if inc.ai_severity == 'MEDIUM' else 'success' }}">{{
-                    inc.ai_severity }}</span>
+                {% else %}
+                <div class="py-12 text-center">
+                    <i class="fas fa-check-circle text-4xl text-emerald-500/20 mb-4"></i>
+                    <p class="text-gray-500 text-sm">No critical alerts detected.</p>
+                </div>
+                {% endfor %}
             </div>
-            {% else %}
-            <p style="color:var(--text-light);text-align:center;padding:2rem;">No recent alerts</p>
-            {% endfor %}
         </div>
     </div>
 </div>
@@ -105,32 +140,45 @@
 
 {% block scripts %}
 <script>
-    // Incident Trends Chart
     const ctx = document.getElementById('trendChart').getContext('2d');
     new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            labels: ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'],
             datasets: [{
                 label: 'High Risk',
                 data: [2, 4, 3, 4, 2, 1, 2],
-                borderColor: '#ef4444',
-                backgroundColor: 'transparent',
-                tension: 0.4
+                borderColor: '#f43f5e',
+                backgroundColor: 'rgba(244, 63, 94, 0.1)',
+                tension: 0.4,
+                fill: true,
+                borderWidth: 3,
+                pointRadius: 4
             }, {
                 label: 'Regular',
                 data: [8, 12, 6, 7, 11, 4, 5],
-                borderColor: '#3b82f6',
-                backgroundColor: 'transparent',
-                tension: 0.4
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                tension: 0.4,
+                fill: true,
+                borderWidth: 3,
+                pointRadius: 4
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: { legend: { display: false } },
             scales: {
-                y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
-                x: { grid: { display: false } }
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255,255,255,0.05)' },
+                    ticks: { color: '#64748b', font: { family: 'Outfit', weight: 'bold' } }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b', font: { family: 'Outfit', weight: 'bold' } }
+                }
             }
         }
     });

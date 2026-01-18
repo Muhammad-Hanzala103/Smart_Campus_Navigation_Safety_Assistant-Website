@@ -8,11 +8,13 @@ from flask_socketio import SocketIO
 from flask_compress import Compress
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from authlib.integrations.flask_client import OAuth
 
 db = SQLAlchemy()
 socketio = SocketIO()
 compress = Compress()
 limiter = Limiter(key_func=get_remote_address)
+oauth = OAuth()
 
 def create_app(config_name='default'):
     app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -28,6 +30,18 @@ def create_app(config_name='default'):
     socketio.init_app(app, cors_allowed_origins="*")
     compress.init_app(app)
     limiter.init_app(app)
+    oauth.init_app(app)
+
+    # Register Google OAuth
+    oauth.register(
+        name='google',
+        client_id=app.config.get('GOOGLE_CLIENT_ID'),
+        client_secret=app.config.get('GOOGLE_CLIENT_SECRET'),
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={
+            'scope': 'openid email profile'
+        }
+    )
     
     # Register Socket Events
     with app.app_context():

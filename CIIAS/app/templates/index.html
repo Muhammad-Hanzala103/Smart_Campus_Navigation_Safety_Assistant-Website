@@ -15,7 +15,11 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -28,11 +32,22 @@
                         brand: {
                             50: '#f0f9ff',
                             100: '#e0f2fe',
-                            500: '#0ea5e9', // Sky 500
-                            600: '#0284c7',
-                            900: '#0c4a6e',
+                            500: '#6366f1', // Indigo 500
+                            600: '#4f46e5',
+                            900: '#1e1b4b',
                         },
-                        dark: '#0B1121', // Deep Navy
+                        dark: '#020617', // Slate 950
+                        'dark-accent': '#0f172a',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'spin-slow': 'spin 12s linear infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
                     }
                 }
             }
@@ -40,43 +55,91 @@
     </script>
     <style>
         .glass-nav {
-            background: rgba(11, 17, 33, 0.85);
-            backdrop-filter: blur(12px);
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         .glass-card {
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
         }
 
         .hero-gradient {
-            background: radial-gradient(circle at top right, #0ea5e9, transparent 40%),
-                radial-gradient(circle at bottom left, #6366f1, transparent 40%);
+            background: radial-gradient(circle at 20% 30%, rgba(99, 102, 241, 0.15), transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.15), transparent 50%);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .mesh-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 50%, #0f172a 0%, #020617 100%);
+        }
+
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(to right, #6366f1, #a855f7);
+            filter: blur(150px);
+            opacity: 0.1;
+            border-radius: 50%;
+            z-index: -1;
+            animation: move 20s infinite alternate;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(-10%, -10%);
+            }
+
+            to {
+                transform: translate(20%, 20%);
+            }
         }
     </style>
 </head>
 
 <body class="bg-dark text-white font-sans antialiased overflow-x-hidden">
+    <div class="mesh-bg"></div>
+    <div class="blob top-0 left-0"></div>
+    <div class="blob bottom-0 right-0" style="animation-delay: -10s;"></div>
 
     <!-- Navbar -->
-    <nav class="fixed w-full z-50 glass-nav border-b border-white/10 transition-all duration-300">
+    <nav class="fixed w-full z-50 glass-nav border-b border-white/10 transition-all duration-300 py-6">
         <div class="max-w-7xl mx-auto px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-4 group cursor-pointer">
                     <div
-                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-brand-500/20">
-                        <i class="fas fa-shield-alt text-xl text-white"></i>
+                        class="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-500 to-accent flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-shield-alt text-2xl text-white"></i>
                     </div>
-                    <span class="text-2xl font-bold tracking-tight">CIIAS</span>
+                    <span class="text-3xl font-black tracking-tighter text-white">CIIAS</span>
                 </div>
-                <div class="hidden md:flex items-center space-x-8">
+                <div class="hidden md:flex items-center space-x-10">
                     <a href="#features"
-                        class="text-sm font-medium text-gray-300 hover:text-white transition-colors">Features</a>
+                        class="text-sm font-bold text-gray-400 hover:text-white transition-all hover:tracking-widest uppercase">Features</a>
                     <a href="#solutions"
-                        class="text-sm font-medium text-gray-300 hover:text-white transition-colors">Solutions</a>
+                        class="text-sm font-bold text-gray-400 hover:text-white transition-all hover:tracking-widest uppercase">Solutions</a>
                     <a href="#about"
-                        class="text-sm font-medium text-gray-300 hover:text-white transition-colors">About</a>
+                        class="text-sm font-bold text-gray-400 hover:text-white transition-all hover:tracking-widest uppercase">About</a>
                 </div>
                 <div class="flex items-center gap-4">
                     <a href="{{ url_for('web.login') }}"
@@ -150,75 +213,133 @@
         </div>
     </header>
 
-    <!-- Features Grid -->
-    <section id="features" class="py-24 bg-dark relative">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
-            <div class="text-center mb-16" data-aos="fade-up">
-                <h2 class="text-3xl lg:text-4xl font-bold mb-4">Everything You Need</h2>
-                <p class="text-gray-400">A unified ecosystem connecting every aspect of university life.</p>
+    <!-- Solutions Section -->
+    <div id="solutions" class="mt-32 pt-20">
+        <div class="text-center mb-16" data-aos="fade-up">
+            <h2 class="text-4xl lg:text-5xl font-extrabold mb-4 tracking-tight">Tailored Solutions</h2>
+            <p class="text-lg text-gray-400">Precision engineered for every role in the university ecosystem.</p>
+        </div>
+        <div class="grid lg:grid-cols-2 gap-12">
+            <div class="glass-card p-10 rounded-[2.5rem] relative overflow-hidden group" data-aos="fade-right">
+                <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fas fa-university text-9xl"></i>
+                </div>
+                <h3 class="text-3xl font-bold mb-6 flex items-center gap-4">
+                    <span class="w-12 h-12 rounded-2xl bg-brand-500/20 flex items-center justify-center">
+                        <i class="fas fa-user-graduate text-brand-500 text-xl"></i>
+                    </span>
+                    Student Hub
+                </h3>
+                <p class="text-gray-400 text-lg leading-relaxed mb-8">
+                    A centralized command center for student life. Track your academic progress, manage finances, and
+                    stay connected with the campus community through AI-driven insights.
+                </p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-brand-500"></i> GPA Analytics
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-brand-500"></i> Smart Attendance
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-brand-500"></i> Lab Bookings
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-brand-500"></i> Course Materials
+                    </div>
+                </div>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Academic Card -->
-                <div class="glass-card p-8 rounded-3xl hover:bg-white/5 transition-all duration-300 group"
-                    data-aos="fade-up" data-aos-delay="100">
-                    <div
-                        class="w-14 h-14 rounded-2xl bg-blue-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-graduation-cap text-2xl text-blue-400"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Academic Success</h3>
-                    <p class="text-gray-400 leading-relaxed mb-6">
-                        Real-time GPA tracking, attendance monitoring, and automated exam scheduling. Never miss a
-                        deadline again.
-                    </p>
-                    <ul class="space-y-2 text-sm text-gray-500">
-                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Live Results
-                            Portal</li>
-                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Course Resources
-                        </li>
-                    </ul>
+            <div class="glass-card p-10 rounded-[2.5rem] relative overflow-hidden group" data-aos="fade-left">
+                <div class="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <i class="fas fa-shield-alt text-9xl"></i>
                 </div>
-
-                <!-- Safety Card -->
-                <div class="glass-card p-8 rounded-3xl hover:bg-white/5 transition-all duration-300 group"
-                    data-aos="fade-up" data-aos-delay="200">
-                    <div
-                        class="w-14 h-14 rounded-2xl bg-red-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-shield-virus text-2xl text-red-400"></i>
+                <h3 class="text-3xl font-bold mb-6 flex items-center gap-4">
+                    <span class="w-12 h-12 rounded-2xl bg-red-500/20 flex items-center justify-center">
+                        <i class="fas fa-user-shield text-red-500 text-xl"></i>
+                    </span>
+                    Admin & Security
+                </h3>
+                <p class="text-gray-400 text-lg leading-relaxed mb-8">
+                    Enterprise-grade monitoring and resource management. Leverage real-time telemetry and predictive
+                    models to ensure campus safety and operational efficiency.
+                </p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-red-500"></i> 24/7 Live Map
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Advanced Safety</h3>
-                    <p class="text-gray-400 leading-relaxed mb-6">
-                        AI-powered incident detection and one-tap SOS alerts. Keeping the campus secure with predictive
-                        intelligence.
-                    </p>
-                    <ul class="space-y-2 text-sm text-gray-500">
-                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Geo-fenced SOS
-                        </li>
-                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Live Map Tracking
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Logistics Card -->
-                <div class="glass-card p-8 rounded-3xl hover:bg-white/5 transition-all duration-300 group"
-                    data-aos="fade-up" data-aos-delay="300">
-                    <div
-                        class="w-14 h-14 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i class="fas fa-bus text-2xl text-purple-400"></i>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-red-500"></i> AI Risk Scoring
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Smart Logistics</h3>
-                    <p class="text-gray-400 leading-relaxed mb-6">
-                        Live shuttle tracking, cafeteria pre-ordering, and room booking. Optimizing your daily campus
-                        routine.
-                    </p>
-                    <ul class="space-y-2 text-sm text-gray-500">
-                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Shuttle GPS</li>
-                        <li class="flex items-center"><i class="fas fa-check text-green-500 mr-2"></i> Digital Cafeteria
-                        </li>
-                    </ul>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-red-500"></i> Asset Tracking
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-300">
+                        <i class="fas fa-check-circle text-red-500"></i> Incident Response
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- About Section -->
+    <div id="about" class="mt-32 pt-20">
+        <div class="glass-card rounded-[3rem] p-12 lg:p-20 relative overflow-hidden">
+            <div class="absolute -top-24 -right-24 w-64 h-64 bg-brand-500/10 blur-[100px] rounded-full"></div>
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <div class="lg:w-1/2" data-aos="fade-right">
+                    <h2 class="text-4xl lg:text-5xl font-extrabold mb-8 tracking-tight">The Vision Behind CIIAS</h2>
+                    <p class="text-xl text-gray-400 leading-relaxed mb-6">
+                        CIIAS was born from a simple yet powerful idea: <span
+                            class="text-white font-semibold">"Technology should work for people, not the other way
+                            around."</span>
+                    </p>
+                    <p class="text-lg text-gray-500 leading-relaxed">
+                        Our mission is to transform traditional university campuses into intelligent, safe, and highly
+                        efficient ecosystems. By unifying fragmented data into a single, cohesive intelligence layer, we
+                        empower every member of the academic community to reach their full potential.
+                    </p>
+                    <div class="mt-10 flex items-center gap-6">
+                        <div
+                            class="w-16 h-16 rounded-2xl bg-brand-500/10 flex items-center justify-center border border-brand-500/20">
+                            <i class="fas fa-brain text-2xl text-brand-500"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-white font-bold">Industrial Excellence</h4>
+                            <p class="text-gray-500 text-sm">Engineered with modern protocols</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:w-1/2 grid grid-cols-2 gap-6" data-aos="fade-left">
+                    <div
+                        class="bg-white/5 p-8 rounded-3xl border border-white/5 hover:border-brand-500/30 transition-colors group">
+                        <div class="text-4xl font-bold text-white mb-2 group-hover:text-brand-500 transition-colors">
+                            99.9%</div>
+                        <p class="text-gray-500 text-sm">System Uptime</p>
+                    </div>
+                    <div
+                        class="bg-white/5 p-8 rounded-3xl border border-white/5 hover:border-brand-500/30 transition-colors group">
+                        <div class="text-4xl font-bold text-white mb-2 group-hover:text-brand-500 transition-colors">
+                            15k+</div>
+                        <p class="text-gray-500 text-sm">Active Nodes</p>
+                    </div>
+                    <div
+                        class="bg-white/5 p-8 rounded-3xl border border-white/5 hover:border-brand-500/30 transition-colors group">
+                        <div class="text-4xl font-bold text-white mb-2 group-hover:text-brand-500 transition-colors">
+                            &lt;50ms</div>
+                        <p class="text-gray-500 text-sm">API Latency</p>
+                    </div>
+                    <div
+                        class="bg-white/5 p-8 rounded-3xl border border-white/5 hover:border-brand-500/30 transition-colors group">
+                        <div class="text-4xl font-bold text-white mb-2 group-hover:text-brand-500 transition-colors">
+                            100%</div>
+                        <p class="text-gray-500 text-sm">Security Compliance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
     </section>
 
     <!-- App Showcase -->
@@ -292,9 +413,33 @@
 
     <script>
         AOS.init({
-            duration: 800,
+            duration: 1000,
             once: true,
-            offset: 50
+            offset: 100,
+            easing: 'ease-out-cubic'
+        });
+
+        // GSAP Animations
+        gsap.from(".hero-content > *", {
+            y: 50,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.2,
+            ease: "power4.out"
+        });
+
+        // Navbar scroll effect
+        window.addEventListener("scroll", () => {
+            const nav = document.querySelector("nav");
+            if (window.scrollY > 50) {
+                nav.classList.add("py-4");
+                nav.classList.remove("py-6");
+                nav.style.background = "rgba(2, 6, 23, 0.95)";
+            } else {
+                nav.classList.add("py-6");
+                nav.classList.remove("py-4");
+                nav.style.background = "rgba(2, 6, 23, 0.8)";
+            }
         });
     </script>
 </body>

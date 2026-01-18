@@ -65,11 +65,11 @@ ROLE_STUDENT = 'student'
 PERMISSIONS = {
     ROLE_ADMIN: ['dashboard', 'incidents', 'incidents.create', 'incidents.edit', 'incidents.delete', 
                  'map', 'users', 'users.create', 'users.edit', 'users.delete', 
-                 'settings', 'analytics', 'audit_logs'],
+                 'settings', 'analytics', 'audit_logs', 'academic', 'library', 'transport', 'cafeteria', 'financial', 'chat'],
     ROLE_SECURITY: ['dashboard', 'incidents', 'incidents.create', 'incidents.edit', 
-                    'map', 'analytics'],
-    ROLE_STAFF: ['dashboard', 'incidents', 'incidents.create', 'map'],
-    ROLE_STUDENT: ['dashboard', 'incidents.create']
+                    'map', 'analytics', 'transport'],
+    ROLE_STAFF: ['dashboard', 'incidents', 'incidents.create', 'map', 'academic', 'library'],
+    ROLE_STUDENT: ['dashboard', 'incidents.create', 'library', 'transport', 'cafeteria', 'financial', 'chat']
 }
 
 def has_permission(user_role, permission):

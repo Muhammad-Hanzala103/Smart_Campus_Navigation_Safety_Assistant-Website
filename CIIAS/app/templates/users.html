@@ -1,67 +1,102 @@
-{% extends "base.html" %}
+{% extends "base_dashboard.html" %}
 {% block title %}Users{% endblock %}
 {% block content %}
-<div class="page-container">
-    <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;">
+<div class="max-w-7xl mx-auto page-enter">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8" data-aos="fade-down">
         <div>
-            <h1>User Management</h1>
-            <p>Manage system users and roles</p>
+            <h1 class="text-3xl font-bold text-white tracking-tight">Identity Governance</h1>
+            <p class="text-gray-400 mt-1">Manage system access and personnel roles</p>
         </div>
-        <button class="btn-primary btn-sm" onclick="openModal()"><i class="fas fa-plus"></i> Add User</button>
+        <button onclick="openModal()"
+            class="px-6 py-3 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary/20 transform hover:-translate-y-1 transition-all flex items-center gap-2">
+            <i class="fas fa-user-plus"></i> Provisions New Identity
+        </button>
     </div>
 
-    <div class="filters">
-        <input type="text" placeholder="Search users..." id="searchUser" onkeyup="filterUsers()">
-        <select id="roleFilter" onchange="filterUsers()">
-            <option value="">All Roles</option>
-            <option value="admin">Admin</option>
-            <option value="security">Security</option>
-            <option value="staff">Staff</option>
-            <option value="student">Student</option>
+    <!-- Filters -->
+    <div class="glass-card p-4 rounded-2xl mb-8 flex flex-wrap gap-4 items-center" data-aos="fade-up">
+        <div class="relative flex-1 min-w-[240px]">
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+            <input type="text" placeholder="Search identities..." id="searchUser" onkeyup="filterUsers()"
+                class="w-full bg-dark border border-white/5 rounded-xl pl-12 pr-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+        </div>
+        <select id="roleFilter" onchange="filterUsers()"
+            class="bg-dark border border-white/5 rounded-xl px-4 py-2.5 text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+            <option value="">All Architectures</option>
+            <option value="admin">System Admin</option>
+            <option value="security">Security Ops</option>
+            <option value="staff">Faculty/Staff</option>
+            <option value="student">Student Body</option>
         </select>
     </div>
 
-    <table class="data-table" id="usersTable">
-        <thead>
-            <tr>
-                <th>User</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Phone</th>
-                <th>Joined</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for u in users %}
-            <tr data-role="{{ u.role }}">
-                <td style="display:flex;align-items:center;gap:0.75rem;">
-                    <div class="user-avatar" style="width:36px;height:36px;font-size:0.85rem;">{{ u.name[0] }}</div>
-                    <strong>{{ u.name }}</strong>
-                </td>
-                <td>{{ u.email }}</td>
-                <td>
-                    <form action="{{ url_for('web.update_user_role', id=u.id) }}" method="POST" style="display:inline;">
-                        <select name="role" onchange="this.form.submit()" class="form-control"
-                            style="padding:0.25rem 0.5rem;font-size:0.85rem;width:auto;">
-                            <option value="admin" {{ 'selected' if u.role=='admin' }}>Admin</option>
-                            <option value="security" {{ 'selected' if u.role=='security' }}>Security</option>
-                            <option value="staff" {{ 'selected' if u.role=='staff' }}>Staff</option>
-                            <option value="student" {{ 'selected' if u.role=='student' }}>Student</option>
-                        </select>
-                    </form>
-                </td>
-                <td>{{ u.phone or '-' }}</td>
-                <td>{{ u.created_at.strftime('%d/%m/%Y') if u.created_at else '-' }}</td>
-                <td>
-                    <a href="#" style="color:var(--accent);margin-right:0.5rem;" title="Edit"><i
-                            class="fas fa-edit"></i></a>
-                    <a href="#" style="color:var(--danger);" title="Delete"><i class="fas fa-trash"></i></a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <!-- Users Table -->
+    <div class="glass-card rounded-[2rem] overflow-hidden" data-aos="fade-up" data-aos-delay="100">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse" id="usersTable">
+                <thead>
+                    <tr class="bg-white/5 border-b border-white/5">
+                        <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Identity</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Contact Intel
+                        </th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Access Role</th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Registration
+                        </th>
+                        <th class="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">
+                            Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                    {% for u in users %}
+                    <tr class="hover:bg-white/[0.02] transition-colors group" data-role="{{ u.role }}">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 rounded-2xl bg-gradient-to-br from-dark-light to-slate-700 flex items-center justify-center text-lg font-bold text-white shadow-inner group-hover:from-primary group-hover:to-accent transition-all">
+                                    {{ u.name[0] }}
+                                </div>
+                                <div>
+                                    <div class="text-white font-bold">{{ u.name }}</div>
+                                    <div class="text-[10px] text-gray-500 uppercase tracking-tighter">UID: {{ 1000 +
+                                        u.id }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-gray-300 text-sm font-medium">{{ u.email }}</div>
+                            <div class="text-[10px] text-gray-500">{{ u.phone or 'No voice uplink' }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <form action="{{ url_for('web.update_user_role', id=u.id) }}" method="POST">
+                                <select name="role" onchange="this.form.submit()"
+                                    class="bg-dark/50 border border-white/10 rounded-lg px-3 py-1.5 text-xs font-bold text-primary focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer transition-all">
+                                    <option value="admin" {{ 'selected' if u.role=='admin' }}>ADMIN</option>
+                                    <option value="security" {{ 'selected' if u.role=='security' }}>SECURITY</option>
+                                    <option value="staff" {{ 'selected' if u.role=='staff' }}>STAFF</option>
+                                    <option value="student" {{ 'selected' if u.role=='student' }}>STUDENT</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">{{ u.created_at.strftime('%b %d, %Y') if
+                            u.created_at else 'Legacy Node' }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button
+                                    class="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-gray-400 hover:bg-emerald-500/20 hover:text-emerald-400 transition-all">
+                                    <i class="fas fa-edit text-sm"></i>
+                                </button>
+                                <button
+                                    class="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-gray-400 hover:bg-rose-500/20 hover:text-rose-400 transition-all">
+                                    <i class="fas fa-trash-alt text-sm"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <script>

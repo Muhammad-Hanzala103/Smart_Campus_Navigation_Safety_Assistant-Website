@@ -1,94 +1,154 @@
-{% extends "base.html" %}
+{% extends "base_dashboard.html" %}
 {% block title %}Map Intelligence{% endblock %}
 {% block content %}
-<div class="map-layout">
-    <div class="map-sidebar">
-        <h2>Map Intelligence</h2>
-        <p class="subtitle">Real-time incident visualization</p>
+<div class="h-full flex flex-col md:flex-row gap-8 page-enter">
+    <div class="w-full md:w-80 flex flex-col gap-6 overflow-y-auto pr-2 pb-8">
+        <div class="glass-card p-6 rounded-3xl" data-aos="fade-right">
+            <h2 class="text-xl font-bold text-white mb-2">Map Intelligence</h2>
+            <p class="text-xs text-gray-500 uppercase tracking-widest font-bold mb-6">Real-time incident visualization
+            </p>
 
-        <div class="sidebar-section">
-            <h4>Layers</h4>
-            <div class="legend-item">
-                <input type="checkbox" id="incidentLayer" checked onchange="toggleIncidents()">
-                <span style="color:var(--danger);">📍</span> Incident Markers
+            <div class="space-y-6">
+                <div>
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Tactical Layers</h4>
+                    <div class="space-y-3">
+                        <label
+                            class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 cursor-pointer hover:bg-white/10 transition-all">
+                            <span class="text-sm text-gray-300 flex items-center gap-3">
+                                <i class="fas fa-map-marker-alt text-rose-500"></i> Incident Nodes
+                            </span>
+                            <input type="checkbox" id="incidentLayer" checked onchange="toggleIncidents()"
+                                class="w-4 h-4 accent-primary">
+                        </label>
+                        <label
+                            class="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/5 cursor-pointer hover:bg-white/10 transition-all">
+                            <span class="text-sm text-gray-300 flex items-center gap-3">
+                                <i class="fas fa-fire text-orange-500"></i> Thermal Grid
+                            </span>
+                            <input type="checkbox" id="heatLayer" checked onchange="toggleHeat()"
+                                class="w-4 h-4 accent-primary">
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Risk Spectrum</h4>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-3 text-xs text-gray-400">
+                            <span
+                                class="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]"></span>
+                            CRITICAL_THREAT
+                        </div>
+                        <div class="flex items-center gap-3 text-xs text-gray-400">
+                            <span
+                                class="w-2.5 h-2.5 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]"></span>
+                            HIGH_ALERT
+                        </div>
+                        <div class="flex items-center gap-3 text-xs text-gray-400">
+                            <span
+                                class="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]"></span>
+                            MEDIUM_RISK
+                        </div>
+                        <div class="flex items-center gap-3 text-xs text-gray-400">
+                            <span
+                                class="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></span>
+                            LOW_IMPACT
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-white/5">
+                    <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Geo-Telemetry</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <div class="text-xl font-black text-white" id="totalIncidents">0</div>
+                            <div class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Total Logs</div>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+                            <div class="text-xl font-black text-primary" id="activeIncidents">0</div>
+                            <div class="text-[8px] font-bold text-gray-500 uppercase tracking-widest">Active Now</div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="legend-item">
-                <input type="checkbox" id="heatLayer" checked onchange="toggleHeat()">
-                <span style="color:#f97316;">🔥</span> Heat Map
-            </div>
         </div>
 
-        <div class="sidebar-section">
-            <h4>Legend</h4>
-            <div class="legend-item"><span class="legend-dot critical"></span> Critical Risk</div>
-            <div class="legend-item"><span class="legend-dot high"></span> High Risk</div>
-            <div class="legend-item"><span class="legend-dot medium"></span> Medium Risk</div>
-            <div class="legend-item"><span class="legend-dot low"></span> Low Risk</div>
-        </div>
-
-        <div class="sidebar-section">
-            <h4>Quick Stats</h4>
-            <div class="quick-stat" id="totalIncidents">0</div>
-            <div class="quick-stat-label">Total Incidents</div>
-            <div class="quick-stat" id="activeIncidents" style="margin-top:1rem;">0</div>
-            <div class="quick-stat-label">Active Now</div>
-        </div>
-
-        <div class="sidebar-section">
-            <h4>Location</h4>
-            <div style="font-size:0.85rem;color:var(--text-light);">
-                <strong>KICSIT New Building</strong><br>
-                J922+47P, Kahuta Rd<br>
-                Rawalpindi, Pakistan<br>
-                <small style="color:var(--accent);">33.6027533, 73.3412463</small>
+        <div class="glass-card p-6 rounded-3xl" data-aos="fade-right" data-aos-delay="200">
+            <h4 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Base Station</h4>
+            <div class="space-y-1">
+                <div class="text-sm font-bold text-white">KICSIT Central</div>
+                <div class="text-[10px] text-gray-500 leading-relaxed uppercase">Kahuta Rd, Rawalpindi, PK</div>
+                <div class="text-[10px] font-mono text-primary mt-2">33.602753, 73.341246</div>
             </div>
         </div>
     </div>
 
-    <div id="map"></div>
+    <div class="flex-1 relative rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl" data-aos="zoom-in">
+        <div id="map" class="w-full h-full min-h-[500px] z-0"></div>
+        <div class="absolute top-6 right-6 z-10">
+            <button onclick="map.setView([KICSIT_LAT, KICSIT_LNG], 17)"
+                class="w-10 h-10 rounded-xl glass flex items-center justify-center text-white hover:bg-primary transition-all">
+                <i class="fas fa-crosshairs"></i>
+            </button>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<style>
+    .leaflet-container {
+        background: #020617 !important;
+    }
+
+    .leaflet-tile {
+        filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+    }
+
+    .custom-marker-kicsit {
+        background: rgba(99, 102, 241, 0.2);
+        border: 2px solid #6366f1;
+        backdrop-filter: blur(8px);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 99px;
+        font-weight: 800;
+        font-size: 10px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    }
+</style>
 <script>
-    // KICSIT New Building - EXACT coordinates from Google Maps
-    // https://www.google.com/maps/place/KICSIT+New+Building/@33.6027533,73.3412463
     const KICSIT_LAT = 33.6027533;
     const KICSIT_LNG = 73.3412463;
 
-    // Initialize map centered on KICSIT
-    const map = L.map('map').setView([KICSIT_LAT, KICSIT_LNG], 17);
+    const map = L.map('map', {
+        zoomControl: false,
+        attributionControl: false
+    }).setView([KICSIT_LAT, KICSIT_LNG], 17);
 
-    // OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
-        maxZoom: 19
-    }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
 
-    // KICSIT Main Building Marker
     const kicsitIcon = L.divIcon({
-        className: 'custom-marker',
-        html: '<div style="background:#3b82f6;color:white;padding:8px 12px;border-radius:8px;font-weight:600;box-shadow:0 2px 10px rgba(0,0,0,0.3);white-space:nowrap;">📍 KICSIT New Building</div>',
-        iconSize: [150, 40],
-        iconAnchor: [75, 40]
+        className: 'custom-marker-kicsit',
+        html: 'Central Hub',
+        iconSize: [80, 24],
+        iconAnchor: [40, 12]
     });
-    const kicsitMarker = L.marker([KICSIT_LAT, KICSIT_LNG], { icon: kicsitIcon }).addTo(map);
-    kicsitMarker.bindPopup('<b>KICSIT New Building</b><br>Kahuta Road, Rawalpindi<br>J922+47P');
+    L.marker([KICSIT_LAT, KICSIT_LNG], { icon: kicsitIcon }).addTo(map);
 
-    // Layers
     let incidentMarkers = L.layerGroup().addTo(map);
     let heatLayer = null;
 
-    // Severity colors
     const severityColors = {
-        'HIGH': '#ef4444',
+        'HIGH': '#f43f5e',
         'MEDIUM': '#f59e0b',
-        'LOW': '#22c55e',
-        'unknown': '#6b7280'
+        'LOW': '#10b981',
+        'unknown': '#64748b'
     };
 
-    // Fetch incidents and render
     fetch('/api/incidents/')
         .then(r => r.json())
         .then(incidents => {
@@ -97,67 +157,56 @@
 
             const heatData = [];
 
-            incidents.forEach((inc, idx) => {
-                // Generate positions around KICSIT for demo
+            incidents.forEach((inc) => {
                 const lat = KICSIT_LAT + (Math.random() - 0.5) * 0.003;
                 const lng = KICSIT_LNG + (Math.random() - 0.5) * 0.003;
-                const severity = inc.ai_analysis?.severity || 'unknown';
+                const severity = inc.ai_severity || 'LOW';
                 const color = severityColors[severity];
 
-                // Circle marker
                 const marker = L.circleMarker([lat, lng], {
                     color: color,
                     fillColor: color,
-                    fillOpacity: 0.7,
-                    radius: severity === 'HIGH' ? 12 : severity === 'MEDIUM' ? 10 : 8,
-                    weight: 2
+                    fillOpacity: 0.8,
+                    radius: severity === 'HIGH' ? 10 : 7,
+                    weight: 2,
+                    className: 'marker-glow'
                 });
 
                 marker.bindPopup(`
-                <div style="min-width:200px;">
-                    <h4 style="margin:0 0 8px 0;color:${color};">${inc.category || 'Incident'}</h4>
-                    <p style="margin:0 0 8px 0;font-size:0.9rem;">${inc.description || 'No description'}</p>
-                    <div style="display:flex;justify-content:space-between;font-size:0.8rem;color:#666;">
-                        <span>Severity: <strong>${severity}</strong></span>
-                        <span>Status: ${inc.status}</span>
+                    <div class="p-2 min-w-[180px] bg-dark text-white font-sans">
+                        <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">${inc.category}</div>
+                        <div class="text-sm font-bold mb-2">${inc.description.substring(0, 50)}...</div>
+                        <div class="flex justify-between items-center text-[10px] font-bold">
+                            <span style="color:${color}">${severity} RISK</span>
+                            <span class="text-gray-500">${inc.status.toUpperCase()}</span>
+                        </div>
                     </div>
-                </div>
-            `);
+                `, { className: 'glass-popup' });
 
                 incidentMarkers.addLayer(marker);
-
-                // Heat data (intensity based on severity)
                 const intensity = severity === 'HIGH' ? 1.0 : severity === 'MEDIUM' ? 0.6 : 0.3;
                 heatData.push([lat, lng, intensity]);
             });
 
-            // Create heat layer
             if (heatData.length > 0) {
                 heatLayer = L.heatLayer(heatData, {
                     radius: 35,
                     blur: 20,
                     maxZoom: 17,
-                    gradient: { 0.2: '#22c55e', 0.5: '#f59e0b', 0.8: '#ef4444', 1: '#dc2626' }
+                    gradient: { 0.2: '#10b981', 0.5: '#f59e0b', 0.8: '#f43f5e', 1: '#be123c' }
                 }).addTo(map);
             }
         });
 
-    // Toggle functions
     function toggleIncidents() {
-        if (document.getElementById('incidentLayer').checked) {
-            map.addLayer(incidentMarkers);
-        } else {
-            map.removeLayer(incidentMarkers);
-        }
+        if (document.getElementById('incidentLayer').checked) map.addLayer(incidentMarkers);
+        else map.removeLayer(incidentMarkers);
     }
 
     function toggleHeat() {
         if (heatLayer) {
-            if (document.getElementById('heatLayer').checked) {
-                map.addLayer(heatLayer);
-            } else {
-                map.removeLayer(heatLayer);
-            }
+            if (document.getElementById('heatLayer').checked) map.addLayer(heatLayer);
+            else map.removeLayer(heatLayer);
         }
     }
 </script>

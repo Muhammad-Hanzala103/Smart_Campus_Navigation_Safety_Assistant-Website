@@ -1,64 +1,93 @@
-{% extends "base.html" %}
+{% extends "base_dashboard.html" %}
 {% block title %}Settings{% endblock %}
 {% block content %}
-<div class="page-container" style="max-width:800px;">
-    <div class="page-header">
-        <h1>System Settings</h1>
-        <p>Configure CIIAS system preferences</p>
+<div class="max-w-4xl mx-auto page-enter">
+    <div class="mb-8" data-aos="fade-down">
+        <h1 class="text-3xl font-bold text-white tracking-tight">System Settings</h1>
+        <p class="text-gray-400 mt-2">Configure core CIIAS ecosystem preferences</p>
     </div>
 
-    <div class="info-card" style="margin-bottom:1.5rem;">
-        <h3>General Settings</h3>
-        <form>
-            <div class="form-group">
-                <label>System Name</label>
-                <input type="text" class="form-control" value="CIIAS - Campus Incident Intelligence & Analytics System">
-            </div>
-            <div class="form-group">
-                <label>Campus Name</label>
-                <input type="text" class="form-control" value="KICSIT New Building">
-            </div>
-            <div class="form-group">
-                <label>Campus Location</label>
-                <input type="text" class="form-control" value="J922+47P, Kahuta Rd, Rawalpindi, Pakistan">
-            </div>
-            <button type="button" class="btn-primary btn-sm" onclick="showToast('Settings saved!', 'success')">Save
-                Settings</button>
-        </form>
-    </div>
+    <div class="space-y-8">
+        <!-- General Settings -->
+        <div class="glass-card p-8 rounded-3xl" data-aos="fade-up">
+            <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                <i class="fas fa-sliders-h text-primary"></i> General Configuration
+            </h3>
+            <form class="space-y-6">
+                <div class="space-y-2">
+                    <label class="text-sm font-semibold text-gray-400 ml-1">System Name</label>
+                    <input type="text"
+                        class="w-full bg-dark-light/50 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                        value="CIIAS - Campus Incident Intelligence & Analytics System">
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-gray-400 ml-1">Campus Name</label>
+                        <input type="text"
+                            class="w-full bg-dark-light/50 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                            value="KICSIT New Building">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-gray-400 ml-1">Campus Location</label>
+                        <input type="text"
+                            class="w-full bg-dark-light/50 border border-white/5 rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-medium"
+                            value="Kahuta Rd, Rawalpindi, Pakistan">
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button"
+                        class="px-6 py-2.5 bg-primary/20 hover:bg-primary/30 border border-primary/40 text-primary font-bold rounded-xl transition-all"
+                        onclick="showToast('Settings saved!', 'success')">Save General</button>
+                </div>
+            </form>
+        </div>
 
-    <div class="info-card" style="margin-bottom:1.5rem;">
-        <h3>AI Configuration</h3>
-        <div class="info-row">
-            <span class="label">AI Mode</span>
-            <span class="value">MOCK (Demo Mode)</span>
-        </div>
-        <div class="info-row">
-            <span class="label">Model</span>
-            <span class="value">hustvl/yolos-tiny</span>
-        </div>
-        <div class="info-row">
-            <span class="label">API Status</span>
-            <span class="badge badge-warning">Mock Active</span>
-        </div>
-    </div>
+        <!-- AI & Intel -->
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="glass-card p-8 rounded-3xl" data-aos="fade-right">
+                <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                    <i class="fas fa-brain text-accent"></i> AI Configuration
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <span class="text-gray-400 text-sm">Operation Mode</span>
+                        <span class="text-accent font-bold">MOCK DEMO</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <span class="text-gray-400 text-sm">Detection Model</span>
+                        <span class="text-white font-mono text-xs">yolos-tiny</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
+                        <span class="text-gray-400 text-sm">Status</span>
+                        <span class="flex items-center gap-2 text-emerald-400 text-sm font-bold animate-pulse">
+                            ● Active
+                        </span>
+                    </div>
+                </div>
+            </div>
 
-    <div class="info-card">
-        <h3>Notification Settings</h3>
-        <div class="form-group">
-            <label style="display:flex;align-items:center;gap:0.75rem;">
-                <input type="checkbox" checked> Email alerts for high-severity incidents
-            </label>
-        </div>
-        <div class="form-group">
-            <label style="display:flex;align-items:center;gap:0.75rem;">
-                <input type="checkbox" checked> Browser notifications
-            </label>
-        </div>
-        <div class="form-group">
-            <label style="display:flex;align-items:center;gap:0.75rem;">
-                <input type="checkbox"> SMS alerts (requires configuration)
-            </label>
+            <div class="glass-card p-8 rounded-3xl" data-aos="fade-left">
+                <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                    <i class="fas fa-bell text-secondary"></i> Notifications
+                </h3>
+                <div class="space-y-4">
+                    <label
+                        class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 transition-all">
+                        <span class="text-gray-300 text-sm">Emergency Alerts</span>
+                        <input type="checkbox" checked class="w-5 h-5 accent-secondary">
+                    </label>
+                    <label
+                        class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 transition-all">
+                        <span class="text-gray-300 text-sm">Critical Updates</span>
+                        <input type="checkbox" checked class="w-5 h-5 accent-secondary">
+                    </label>
+                    <label
+                        class="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 transition-all">
+                        <span class="text-gray-300 text-sm">SMS Integration</span>
+                        <input type="checkbox" class="w-5 h-5 accent-secondary">
+                    </label>
+                </div>
+            </div>
         </div>
     </div>
 </div>

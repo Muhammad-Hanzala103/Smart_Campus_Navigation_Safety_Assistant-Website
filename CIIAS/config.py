@@ -14,6 +14,10 @@ class Config:
     AI_MODE = os.environ.get('AI_MODE', 'mock')  # 'mock' or 'huggingface'
     HUGGINGFACE_API_KEY = os.environ.get('HUGGINGFACE_API_KEY')
     HUGGINGFACE_MODEL = os.environ.get('HUGGINGFACE_MODEL', 'hustvl/yolos-tiny')
+    
+    # Google OAuth
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID')
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
 
 
 class DevelopmentConfig(Config):

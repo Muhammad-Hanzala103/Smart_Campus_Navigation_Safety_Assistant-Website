@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, request, session, flash, jsonify
 from app.models import User, Incident, Booking, AuditLog, MapNode
-from app import db
+from app import db, oauth
 from app.utils import login_required, role_required, ROLE_ADMIN, ROLE_SECURITY, ROLE_STAFF, has_permission
 from datetime import datetime
 
@@ -66,6 +66,42 @@ def logout():
         db.session.commit()
     session.clear()
     return redirect(url_for('web.login'))
+
+# ============== GOOGLE OAUTH ==============
+@web_bp.route('/login/google')
+def google_login():
+    redirect_uri = url_for('web.google_authorize', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
+
+@web_bp.route('/login/google/authorize')
+def google_authorize():
+    token = oauth.google.authorize_access_token()
+    user_info = token.get('userinfo')
+    if not user_info:
+        flash('Failed to fetch user info from Google')
+        return redirect(url_for('web.login'))
+    
+    email = user_info['email']
+    name = user_info['name']
+    
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        # Create user if not exists
+        user = User(name=name, email=email, role='student')
+        db.session.add(user)
+        db.session.commit()
+        flash(f'Welcome {name}! Your account has been created via Google.')
+    
+    session['user_id'] = user.id
+    session['user_name'] = user.name
+    session['user_role'] = user.role
+    session['user_email'] = user.email
+    
+    log = AuditLog(user_id=user.id, action='LOGIN_GOOGLE', details='User logged in via Google OAuth')
+    db.session.add(log)
+    db.session.commit()
+    
+    return redirect(url_for('web.dashboard'))
 
 @web_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
