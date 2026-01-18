@@ -259,6 +259,21 @@ def index():
         return redirect(url_for('web.dashboard'))
     return render_template('index.html')
 
+@web_bp.route('/sitemap.xml')
+def sitemap():
+    """Generate sitemap.xml for SEO"""
+    from flask import make_response
+    pages = []
+    # Static pages
+    pages.append(["http://ciias-web.vercel.app/", "2024-01-01"])
+    pages.append(["http://ciias-web.vercel.app/login", "2024-01-01"])
+    pages.append(["http://ciias-web.vercel.app/register", "2024-01-01"])
+    
+    xml_sitemap = render_template('sitemap.xml', pages=pages)
+    response = make_response(xml_sitemap)
+    response.headers["Content-Type"] = "application/xml"
+    return response
+
 # ============== CAFETERIA MODULE ==============
 from app.models import CafeteriaItem, CafeteriaOrder
 @web_bp.route('/cafeteria')

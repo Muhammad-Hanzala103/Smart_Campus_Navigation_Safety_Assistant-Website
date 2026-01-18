@@ -5,9 +5,14 @@ from flask_cors import CORS
 from config import config
 
 from flask_socketio import SocketIO
+from flask_compress import Compress
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 db = SQLAlchemy()
 socketio = SocketIO()
+compress = Compress()
+limiter = Limiter(key_func=get_remote_address)
 
 def create_app(config_name='default'):
     app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -21,6 +26,8 @@ def create_app(config_name='default'):
     
     db.init_app(app)
     socketio.init_app(app, cors_allowed_origins="*")
+    compress.init_app(app)
+    limiter.init_app(app)
     
     # Register Socket Events
     with app.app_context():
