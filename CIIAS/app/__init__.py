@@ -9,12 +9,14 @@ from flask_compress import Compress
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from authlib.integrations.flask_client import OAuth
+from flask_mail import Mail
 
 db = SQLAlchemy()
 socketio = SocketIO()
 compress = Compress()
 limiter = Limiter(key_func=get_remote_address)
 oauth = OAuth()
+mail = Mail()
 
 def create_app(config_name='default'):
     app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -31,6 +33,7 @@ def create_app(config_name='default'):
     compress.init_app(app)
     limiter.init_app(app)
     oauth.init_app(app)
+    mail.init_app(app)
 
     # Register Google OAuth
     oauth.register(

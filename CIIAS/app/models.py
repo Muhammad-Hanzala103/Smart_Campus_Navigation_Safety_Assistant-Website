@@ -15,12 +15,52 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
     fcm_token = db.Column(db.String(256))  # For push notifications
+    
+    # Advanced Security Features
+    totp_secret = db.Column(db.String(32))
+    is_2fa_enabled = db.Column(db.Boolean, default=False)
+    twofactor_method = db.Column(db.String(20), default='email') # email, totp, both
+    otp_code = db.Column(db.String(6))
+    otp_expiry = db.Column(db.DateTime)
+    backup_codes = db.Column(db.Text) # Stored as comma-separated or JSON string
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    # TOTP Helpers
+    def get_totp_uri(self):
+        import pyotp
+        if not self.totp_secret:
+            self.totp_secret = pyotp.random_base32()
+            db.session.commit()
+        return pyotp.totp.TOTP(self.totp_secret).provisioning_uri(
+            name=self.email, issuer_name="CIIAS Portal")
+
+    def verify_totp(self, token):
+        import pyotp
+        if not self.totp_secret:
+            return False
+        totp = pyotp.totp.TOTP(self.totp_secret)
+        return totp.verify(token)
+
+    # OTP Helpers
+    def generate_otp(self):
+        import random
+        from datetime import timedelta
+        self.otp_code = str(random.randint(100000, 999999))
+        self.otp_expiry = datetime.utcnow() + timedelta(minutes=10)
+        db.session.commit()
+        return self.otp_code
+
+    def verify_otp(self, code):
+        if not self.otp_code or not self.otp_expiry:
+            return False
+        if datetime.utcnow() > self.otp_expiry:
+            return False
+        return self.otp_code == code
 
     def to_dict(self, include_phone=True):
         data = {

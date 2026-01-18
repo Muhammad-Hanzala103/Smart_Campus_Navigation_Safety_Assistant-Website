@@ -21,6 +21,20 @@ def login():
         password = request.form.get('password')
         user = User.query.filter_by(email=email).first()
         if user and user.check_password(password):
+            if user.is_2fa_enabled:
+                session['pending_user_id'] = user.id
+                if user.twofactor_method in ['email', 'both']:
+                    otp = user.generate_otp()
+                    from flask_mail import Message
+                    from app import mail
+                    msg = Message("CIIAS 2FA Authorization", recipients=[user.email])
+                    msg.body = f"Your 2FA access code is: {otp}. It expires in 10 minutes."
+                    try:
+                        mail.send(msg)
+                    except:
+                        pass # Log error or handle silently for security
+                return redirect(url_for('web.verify_2fa'))
+            
             session['user_id'] = user.id
             session['user_name'] = user.name
             session['user_role'] = user.role
@@ -57,6 +71,39 @@ def register():
         flash('Account created! Please login.')
         return redirect(url_for('web.login'))
     return render_template('register.html')
+
+@web_bp.route('/login/verify-2fa', methods=['GET', 'POST'])
+def verify_2fa():
+    if 'pending_user_id' not in session:
+        return redirect(url_for('web.login'))
+    
+    user = User.query.get(session['pending_user_id'])
+    if request.method == 'POST':
+        token = request.form.get('token')
+        
+        verified = False
+        if user.twofactor_method == 'totp':
+            verified = user.verify_totp(token)
+        elif user.twofactor_method == 'email':
+            verified = user.verify_otp(token)
+        elif user.twofactor_method == 'both':
+            verified = user.verify_totp(token) or user.verify_otp(token)
+            
+        if verified:
+            session.pop('pending_user_id', None)
+            session['user_id'] = user.id
+            session['user_name'] = user.name
+            session['user_role'] = user.role
+            session['user_email'] = user.email
+            
+            user.otp_code = None # Clear OTP
+            db.session.commit()
+            
+            return redirect(url_for('web.dashboard'))
+        else:
+            flash('Invalid authorization token')
+            
+    return render_template('verify_2fa.html', user=user)
 
 @web_bp.route('/logout')
 def logout():
@@ -109,10 +156,58 @@ def forgot_password():
         email = request.form.get('email')
         user = User.query.filter_by(email=email).first()
         if user:
-            flash('Password reset link sent to your email (demo mode)')
+            otp = user.generate_otp()
+            from flask_mail import Message
+            from app import mail
+            msg = Message("CIIAS Password Recovery OTP", recipients=[email])
+            msg.body = f"Your password reset OTP is: {otp}. It expires in 10 minutes."
+            try:
+                mail.send(msg)
+                session['reset_email'] = email # Store to move to validation
+                flash('OTP sent to your email.')
+                return redirect(url_for('web.reset_password_otp'))
+            except Exception as e:
+                flash(f'Error sending email: {str(e)}')
         else:
             flash('Email not found')
     return render_template('forgot_password.html')
+
+@web_bp.route('/reset-password-otp', methods=['GET', 'POST'])
+def reset_password_otp():
+    if 'reset_email' not in session:
+        return redirect(url_for('web.forgot_password'))
+    
+    if request.method == 'POST':
+        otp = request.form.get('otp')
+        user = User.query.filter_by(email=session['reset_email']).first()
+        if user and user.verify_otp(otp):
+            session['otp_verified'] = True
+            return redirect(url_for('web.reset_password_new'))
+        else:
+            flash('Invalid or expired OTP')
+    return render_template('reset_password_otp.html')
+
+@web_bp.route('/reset-password-new', methods=['GET', 'POST'])
+def reset_password_new():
+    if not session.get('otp_verified'):
+        return redirect(url_for('web.forgot_password'))
+    
+    if request.method == 'POST':
+        password = request.form.get('password')
+        confirm = request.form.get('confirm_password')
+        if password == confirm:
+            user = User.query.filter_by(email=session['reset_email']).first()
+            user.set_password(password)
+            user.otp_code = None
+            user.otp_expiry = None
+            db.session.commit()
+            session.pop('reset_email', None)
+            session.pop('otp_verified', None)
+            flash('Password reset successful! Please login.')
+            return redirect(url_for('web.login'))
+        else:
+            flash('Passwords do not match')
+    return render_template('reset_password_new.html')
 
 # ============== DASHBOARD ==============
 @web_bp.route('/dashboard')
@@ -274,6 +369,54 @@ def profile():
         session['user_name'] = user.name
         flash('Profile updated successfully')
     return render_template('profile.html', user=user)
+
+# ============== 2FA MANAGEMENT ==============
+@web_bp.route('/profile/2fa/setup')
+@login_required
+def setup_2fa():
+    user = User.query.get(session['user_id'])
+    totp_uri = user.get_totp_uri()
+    
+    import qrcode
+    import io
+    import base64
+    
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(totp_uri)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    buffered = io.BytesIO()
+    img.save(buffered, format="PNG")
+    qr_base64 = base64.b64encode(buffered.getvalue()).decode()
+    
+    return render_template('setup_2fa.html', qr_base64=qr_base64, secret=user.totp_secret)
+
+@web_bp.route('/profile/2fa/enable', methods=['POST'])
+@login_required
+def enable_2fa():
+    user = User.query.get(session['user_id'])
+    token = request.form.get('token')
+    method = request.form.get('method', 'totp')
+    
+    if user.verify_totp(token):
+        user.is_2fa_enabled = True
+        user.twofactor_method = method
+        db.session.commit()
+        flash('2FA has been successfully enabled!')
+        return redirect(url_for('web.profile'))
+    else:
+        flash('Invalid token. Please try again.')
+        return redirect(url_for('web.setup_2fa'))
+
+@web_bp.route('/profile/2fa/disable', methods=['POST'])
+@login_required
+def disable_2fa():
+    user = User.query.get(session['user_id'])
+    user.is_2fa_enabled = False
+    db.session.commit()
+    flash('2FA has been disabled.')
+    return redirect(url_for('web.profile'))
 
 # ============== API ENDPOINTS FOR AJAX ==============
 @web_bp.route('/api/incidents/stats')
