@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, session, flash, jsonify
-from app.models import User, Incident, Booking, AuditLog, MapNode
+from app.models import User, Incident, Booking, AuditLog, MapNode, Department, Campus, MapPOI, Course, Shuttle, Book
 from app import db, oauth
 from app.utils import (
     login_required, role_required, has_permission,
@@ -39,7 +39,10 @@ def login():
             session['user_name'] = user.name
             session['user_role'] = user.role
             session['user_email'] = user.email
+            session['campus_id'] = user.campus_id
             session['campus_name'] = user.campus.name if user.campus else 'Global'
+            session['campus_lat'] = user.campus.latitude if user.campus else 33.6518
+            session['campus_lng'] = user.campus.longitude if user.campus else 73.1566
             session['dept_name'] = user.department.name if user.department else 'Headquarters'
             # Log action
             log = AuditLog(user_id=user.id, action='LOGIN', details=f'User logged in from web')
@@ -97,7 +100,10 @@ def verify_2fa():
             session['user_name'] = user.name
             session['user_role'] = user.role
             session['user_email'] = user.email
+            session['campus_id'] = user.campus_id
             session['campus_name'] = user.campus.name if user.campus else 'Global'
+            session['campus_lat'] = user.campus.latitude if user.campus else 33.6518
+            session['campus_lng'] = user.campus.longitude if user.campus else 73.1566
             session['dept_name'] = user.department.name if user.department else 'Headquarters'
             
             user.otp_code = None # Clear OTP
@@ -147,7 +153,10 @@ def google_authorize():
     session['user_name'] = user.name
     session['user_role'] = user.role
     session['user_email'] = user.email
+    session['campus_id'] = user.campus_id
     session['campus_name'] = user.campus.name if user.campus else 'Global'
+    session['campus_lat'] = user.campus.latitude if user.campus else 33.6518
+    session['campus_lng'] = user.campus.longitude if user.campus else 73.1566
     session['dept_name'] = user.department.name if user.department else 'Headquarters'
     
     log = AuditLog(user_id=user.id, action='LOGIN_GOOGLE', details='User logged in via Google OAuth')
@@ -234,7 +243,13 @@ def dashboard():
 @login_required
 @role_required(ROLE_ADMIN, ROLE_SECURITY)
 def security_dashboard():
-    return render_template('security_dashboard.html')
+    campus_id = session.get('campus_id')
+    pois = MapPOI.query.filter_by(campus_id=campus_id).all() if campus_id else []
+    
+    return render_template('security_dashboard.html', 
+                          pois=pois, 
+                          campus_lat=session.get('campus_lat', 33.6518),
+                          campus_lng=session.get('campus_lng', 73.1566))
 
 # ============== FACULTY MODULE ==============
 from app.models import Course, Shuttle # Import new models

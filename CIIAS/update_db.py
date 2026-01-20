@@ -69,6 +69,18 @@ with app.app_context():
                 conn.execute(text("ALTER TABLE cafeteria_items ADD COLUMN campus_id INTEGER"))
                 conn.execute(text("ALTER TABLE cafeteria_items ADD COLUMN cafeteria_name VARCHAR(100) DEFAULT 'Main Cafe'"))
 
+            # Fix Campus Coordinates
+            campus_columns = [
+                ("latitude", "FLOAT"),
+                ("longitude", "FLOAT")
+            ]
+            for col_name, col_type in campus_columns:
+                try:
+                    conn.execute(text(f"SELECT {col_name} FROM campuses LIMIT 1"))
+                except Exception:
+                    print(f"Column '{col_name}' missing in campuses. Adding it...")
+                    conn.execute(text(f"ALTER TABLE campuses ADD COLUMN {col_name} {col_type}"))
+
             # Add Indexes
             print("Optimizing indexes for scale...")
             try:
@@ -101,10 +113,16 @@ with app.app_context():
     # 2. Campus
     campus = Campus.query.filter_by(name="Islamabad Main Campus").first()
     if not campus:
-        campus = Campus(org_id=org.id, name="Islamabad Main Campus", location="Sector H-12, Islamabad")
+        campus = Campus(
+            org_id=org.id, 
+            name="Islamabad Main Campus", 
+            location="Sector H-12, Islamabad",
+            latitude=33.6518,
+            longitude=73.1566
+        )
         db.session.add(campus)
         db.session.commit()
-        print("Main Campus created.")
+        print("Main Campus created with coordinates.")
 
     # 3. 40 Departments
     if Department.query.count() < 10:

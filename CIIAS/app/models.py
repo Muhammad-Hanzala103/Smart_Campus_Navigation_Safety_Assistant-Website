@@ -29,6 +29,8 @@ class Campus(db.Model):
     location = db.Column(db.String(255))
     contact_email = db.Column(db.String(120))
     timezone = db.Column(db.String(50), default='UTC')
+    latitude = db.Column(db.Float) # For campus centering
+    longitude = db.Column(db.Float) 
     
 
 
@@ -38,7 +40,33 @@ class Campus(db.Model):
             'org_id': self.org_id,
             'name': self.name,
             'location': self.location,
+            'latitude': self.latitude,
+            'longitude': self.longitude,
             'timezone': self.timezone
+        }
+
+class MapPOI(db.Model):
+    __tablename__ = 'map_pois'
+    id = db.Column(db.Integer, primary_key=True)
+    campus_id = db.Column(db.Integer, db.ForeignKey('campuses.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    type = db.Column(db.String(50), default='room') # room, lab, dept, cafeteria, office, emergency
+    lat = db.Column(db.Float, nullable=False)
+    lng = db.Column(db.Float, nullable=False)
+    description = db.Column(db.Text)
+    is_public = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'campus_id': self.campus_id,
+            'name': self.name,
+            'type': self.type,
+            'lat': self.lat,
+            'lng': self.lng,
+            'description': self.description,
+            'is_public': self.is_public
         }
 
 class Department(db.Model):
@@ -785,4 +813,5 @@ StaffDetail.user = db.relationship('User', backref=db.backref('staff_record', us
 
 CafeteriaItem.campus = db.relationship('Campus', backref='cafeteria_items')
 Shuttle.campus = db.relationship('Campus', backref='shuttles')
+MapPOI.campus = db.relationship('Campus', backref='pois')
 

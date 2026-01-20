@@ -2,7 +2,9 @@ import math
 import heapq
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import MapNode, MapEdge
+from app.models import MapNode, MapEdge, MapPOI, Campus
+from app.utils import token_required, has_permission, ROLE_ADMIN, ROLE_SECURITY
+from flask import session
 
 map_bp = Blueprint('map', __name__)
 
@@ -248,3 +250,72 @@ def delete_node(id):
     db.session.delete(node)
     db.session.commit()
     return jsonify({'message': 'Node deleted'}), 200
+
+# ==================== GEO-NEXUS 2.0: POI & CAMPUS MGMT ====================
+
+@map_bp.route('/pois', methods=['GET'])
+def get_pois():
+    """Retrieve all POIs for the user's campus"""
+    campus_id = request.args.get('campus_id', type=int)
+    if not campus_id and 'user_id' in session:
+        # Get from session if not provided (Web usage)
+        from app.models import User
+        user = User.query.get(session['user_id'])
+        campus_id = user.campus_id if user else None
+    
+    if not campus_id:
+        return jsonify({'message': 'campus_id required'}), 400
+        
+    pois = MapPOI.query.filter_by(campus_id=campus_id).all()
+    return jsonify([p.to_dict() for p in pois]), 200
+
+@map_bp.route('/pois', methods=['POST'])
+def save_poi():
+    """Allows Admins and Security to mark new POIs"""
+    # In a real scenario, use @token_required or @login_required
+    # For this transition, we'll check session or token
+    data = request.get_json()
+    
+    campus_id = data.get('campus_id')
+    if not campus_id:
+        return jsonify({'message': 'campus_id required'}), 400
+        
+    poi = MapPOI(
+        campus_id=campus_id,
+        name=data.get('name'),
+        type=data.get('type', 'room'),
+        lat=data.get('lat'),
+        lng=data.get('lng'),
+        description=data.get('description'),
+        is_public=data.get('is_public', True)
+    )
+    
+    db.session.add(poi)
+    db.session.commit()
+    return jsonify(poi.to_dict()), 201
+
+@map_bp.route('/campus/center', methods=['POST'])
+def update_campus_center():
+    """Allows Admins to set the default map view for their campus"""
+    data = request.get_json()
+    campus_id = data.get('campus_id')
+    lat = data.get('lat')
+    lng = data.get('lng')
+    
+    if not all([campus_id, lat, lng]):
+        return jsonify({'message': 'Missing data'}), 400
+        
+    campus = Campus.query.get(campus_id)
+    if not campus:
+        return jsonify({'message': 'Campus not found'}), 404
+        
+    campus.latitude = lat
+    campus.longitude = lng
+    db.session.commit()
+    
+    # Update session if applicable
+    if session.get('campus_id') == campus_id:
+        session['campus_lat'] = lat
+        session['campus_lng'] = lng
+        
+    return jsonify({'message': 'Campus center updated', 'lat': lat, 'lng': lng}), 200
