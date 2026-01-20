@@ -1,9 +1,9 @@
 {% extends "base_dashboard.html" %}
 
-{% block title %}Security Command{% endblock %}
+{% block title %}Geo-Nexus Security Command{% endblock %}
 
 {% block content %}
-<div class="h-full flex flex-col md:flex-row gap-6 relative">
+<div class="h-full flex flex-col md:flex-row gap-6 relative" x-data="mapAdmin()">
 
     <!-- Live Map Container -->
     <div class="flex-1 relative rounded-xl overflow-hidden glass shadow-2xl border border-slate-600">
@@ -13,8 +13,16 @@
         <div
             class="absolute top-4 right-4 z-[400] glass px-4 py-2 rounded-lg text-xs font-bold text-green-400 flex items-center shadow-lg">
             <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse mr-2"></span>
-            LIVE MONITORING
+            LIVE MONITORING: {{ session['campus_name'] }}
         </div>
+
+        <!-- Admin Control Hint -->
+        {% if has_permission('admin') %}
+        <div
+            class="absolute bottom-4 left-4 z-[400] glass px-3 py-2 rounded-lg text-[10px] text-gray-300 border border-white/10 shadow-xl pointer-events-none">
+            <i class="fas fa-mouse-pointer mr-1"></i> ADMIN: Click on map to mark new POI (Room/Lab)
+        </div>
+        {% endif %}
     </div>
 
     <!-- Incident Feed Panel -->
@@ -26,8 +34,8 @@
                 <p class="text-2xl font-bold text-red-500" id="activeCount">0</p>
             </div>
             <div class="glass p-4 rounded-xl text-center">
-                <p class="text-xs text-gray-400 uppercase">Resolved</p>
-                <p class="text-2xl font-bold text-green-500" id="resolvedCount">0</p>
+                <p class="text-xs text-gray-400 uppercase">POIs Marked</p>
+                <p class="text-2xl font-bold text-blue-500">{{ pois|length }}</p>
             </div>
         </div>
 
@@ -39,7 +47,6 @@
             </div>
 
             <div id="incidentFeed" class="flex-1 overflow-y-auto p-4 space-y-3">
-                <!-- Incidents will be injected here -->
                 <div class="text-center text-gray-500 text-sm py-8">Waiting for alerts...</div>
             </div>
         </div>
@@ -50,44 +57,105 @@
 
 {% block scripts %}
 <script>
-    // Initialize Map
-    const map = L.map('securityMap').setView([33.6518, 73.1566], 18); // Default to CUI coordinates
+    function mapAdmin() {
+        return {
+            isAdmin: {{ 'true' if has_permission('admin') else 'false' }
+    },
+    campusId: { { session.get('campus_id', 0) } },
+
+    init() {
+        // Initialize Map using Campus Coordinates
+        const map = L.map('securityMap').setView([{{ campus_lat }}, { { campus_lng } }], 18);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap &copy; CARTO'
     }).addTo(map);
 
-    const markers = {};
+    // Load POIs
+    const poiIcons = {
+        'room': '<i class="fas fa-door-open text-blue-400"></i>',
+        'lab': '<i class="fas fa-flask text-emerald-400"></i>',
+        'dept': '<i class="fas fa-building text-purple-400"></i>',
+        'cafeteria': '<i class="fas fa-utensils text-orange-400"></i>',
+        'emergency': '<i class="fas fa-exclamation-circle text-red-500"></i>'
+    };
+
+    {% for poi in pois %}
+    const marker{{ poi.id }} = L.marker([{{ poi.lat }}, {{ poi.lng }}], {
+        icon: L.divIcon({
+            className: 'poi-icon',
+            html: `<div class="p-2 glass rounded-full shadow-lg border border-white/20 flex items-center justify-center bg-slate-900/80">${poiIcons['{{ poi.type }}'] || '<i class="fas fa-map-marker-alt"></i>'}</div>`,
+            iconSize: [30, 30],
+            iconAnchor: [15, 15]
+        })
+    }).addTo(map);
+
+    const navLinks = `
+                        <div class="p-2 text-slate-900">
+                            <b class="text-sm font-bold block mb-1">{{ poi.name }}</b>
+                            <p class="text-[10px] text-gray-500 mb-3">{{ poi.description or 'No details available' }}</p>
+                            <div class="flex flex-col gap-2">
+                                <a href="https://www.google.com/maps/dir/?api=1&destination={{ poi.lat }},{{ poi.lng }}" 
+                                   target="_blank" class="bg-primary text-white text-[10px] px-3 py-2 rounded-lg text-center font-bold flex items-center justify-center">
+                                   <i class="fab fa-google mr-2"></i> Navigate (Google)
+                                </a>
+                                <a href="http://maps.apple.com/?daddr={{ poi.lat }},{{ poi.lng }}" 
+                                   target="_blank" class="bg-gray-800 text-white text-[10px] px-3 py-2 rounded-lg text-center font-bold flex items-center justify-center">
+                                   <i class="fab fa-apple mr-2"></i> Navigate (Apple)
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    marker{ { poi.id } }.bindPopup(navLinks);
+    {% endfor %}
+
+    // Admin: Add POI on Click
+    if (this.isAdmin) {
+        map.on('click', (e) => {
+            const name = prompt("Enter Name for this location (e.g. CS Lab 1):");
+            if (!name) return;
+            const type = prompt("Enter Type (room, lab, dept, cafeteria, emergency):", "room");
+
+            fetch('/api/map/pois', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    campus_id: this.campusId,
+                    name: name,
+                    type: type,
+                    lat: e.latlng.lat,
+                    lng: e.latlng.lng,
+                    description: `Admin marked location at ${this.campusId}`
+                })
+            }).then(() => location.reload());
+        });
+    }
+
+    // Global map ref for other functions
+    window.nexusMap = map;
+            }
+        }
+    }
 
     // Socket Events
     socket.on('new_incident', (data) => {
-        addIncidentMarker(data);
-        addIncidentCard(data);
-        updateStats();
-        // Play alert sound
-        new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(() => { });
-    });
-
-    socket.on('incident_update', (data) => {
-        // Update marker/card status logic
-    });
-
-    function addIncidentMarker(data) {
         if (!data.lat || !data.lng) return;
 
+        const map = window.nexusMap;
         const iconColor = data.severity === 'HIGH' ? 'red' : 'orange';
-
         const marker = L.marker([data.lat, data.lng], {
             icon: L.divIcon({
                 className: 'custom-div-icon',
-                html: `<div style="background-color: ${iconColor}; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 10px ${iconColor};"></div>`,
+                html: `<div style="background-color: ${iconColor}; width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 15px ${iconColor};" class="animate-pulse"></div>`,
                 iconSize: [12, 12],
                 iconAnchor: [6, 6]
             })
         }).addTo(map);
 
         marker.bindPopup(`<b>${data.type}</b><br>${data.description}`);
-        markers[data.id] = marker;
-    }
+        addIncidentCard(data);
+        updateStats();
+        new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(() => { });
+    });
 
     function addIncidentCard(data) {
         const feed = document.getElementById('incidentFeed');
@@ -107,11 +175,30 @@
         const count = document.getElementById('activeCount');
         count.innerText = parseInt(count.innerText) + 1;
     }
-
-    // Load initial data (Optional: Fetch from API first)
 </script>
 
 <style>
+    .poi-icon {
+        border: none !important;
+        background: transparent !important;
+    }
+
+    .animate-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: .5;
+        }
+    }
+
     @keyframes fadeInUp {
         from {
             opacity: 0;
