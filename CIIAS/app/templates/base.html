@@ -24,32 +24,37 @@
     <nav class="top-navbar">
         <div class="nav-brand">CIIAS</div>
         <div class="nav-links">
-            <a href="{{ url_for('web.dashboard') }}" class="{{ 'active' if request.endpoint == 'web.dashboard' }}">
+            <a href="{{ url_for('web.dashboard') }}"
+                class="{{ 'active' if request.endpoint and request.endpoint == 'web.dashboard' }}">
                 <i class="fas fa-chart-line"></i> Dashboard
             </a>
-            <a href="{{ url_for('web.incidents') }}" class="{{ 'active' if 'incident' in request.endpoint }}">
+            <a href="{{ url_for('web.incidents') }}"
+                class="{{ 'active' if request.endpoint and 'incident' in request.endpoint }}">
                 <i class="fas fa-exclamation-triangle"></i> Incidents
             </a>
             <a href="{{ url_for('web.map_intelligence') }}"
-                class="{{ 'active' if request.endpoint == 'web.map_intelligence' }}">
+                class="{{ 'active' if request.endpoint and request.endpoint == 'web.map_intelligence' }}">
                 <i class="fas fa-map-marked-alt"></i> Map Intelligence
             </a>
             <a href="{{ url_for('web.system_status') }}"
-                class="{{ 'active' if request.endpoint == 'web.system_status' }}">
+                class="{{ 'active' if request.endpoint and request.endpoint == 'web.system_status' }}">
                 <i class="fas fa-server"></i> System Status
             </a>
             {% if has_permission('users') %}
-            <a href="{{ url_for('web.users') }}" class="{{ 'active' if request.endpoint == 'web.users' }}">
+            <a href="{{ url_for('web.users') }}"
+                class="{{ 'active' if request.endpoint and request.endpoint == 'web.users' }}">
                 <i class="fas fa-users"></i> Users
             </a>
             {% endif %}
             {% if has_permission('analytics') %}
-            <a href="{{ url_for('web.analytics') }}" class="{{ 'active' if request.endpoint == 'web.analytics' }}">
+            <a href="{{ url_for('web.analytics') }}"
+                class="{{ 'active' if request.endpoint and request.endpoint == 'web.analytics' }}">
                 <i class="fas fa-chart-pie"></i> Analytics
             </a>
             {% endif %}
             {% if has_permission('audit_logs') %}
-            <a href="{{ url_for('web.audit_logs') }}" class="{{ 'active' if request.endpoint == 'web.audit_logs' }}">
+            <a href="{{ url_for('web.audit_logs') }}"
+                class="{{ 'active' if request.endpoint and request.endpoint == 'web.audit_logs' }}">
                 <i class="fas fa-history"></i> Audit Logs
             </a>
             {% endif %}

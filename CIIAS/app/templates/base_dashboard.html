@@ -161,7 +161,7 @@
 
             <!-- Dashboard -->
             <a href="{{ url_for('web.dashboard') }}"
-                class="flex items-center px-4 py-3 rounded-lg hover:bg-primary/20 hover:text-primary transition-colors {{ 'bg-primary/20 text-primary' if request.endpoint == 'web.dashboard' }}">
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-primary/20 hover:text-primary transition-colors {{ 'bg-primary/20 text-primary' if request.endpoint and request.endpoint == 'web.dashboard' }}">
                 <i class="fas fa-chart-pie w-6 text-center"></i>
                 <span x-show="sidebarOpen" class="ml-3 font-medium">Overview</span>
             </a>
@@ -171,7 +171,7 @@
             <div class="mt-6 mb-2 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider"
                 x-show="sidebarOpen">Security</div>
             <a href="{{ url_for('web.security_dashboard') }}"
-                class="flex items-center px-4 py-3 rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-colors {{ 'bg-red-500/20 text-red-400' if 'security' in request.endpoint }}">
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-red-500/20 hover:text-red-400 transition-colors {{ 'bg-red-500/20 text-red-400' if request.endpoint and 'security' in request.endpoint }}">
                 <i class="fas fa-map-marked-alt w-6 text-center"></i>
                 <span x-show="sidebarOpen" class="ml-3 font-medium">Live Map Room</span>
             </a>
@@ -182,7 +182,7 @@
             <div class="mt-6 mb-2 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider"
                 x-show="sidebarOpen">Academic</div>
             <a href="{{ url_for('web.faculty_dashboard') }}"
-                class="flex items-center px-4 py-3 rounded-lg hover:bg-blue-500/20 hover:text-blue-400 transition-colors {{ 'bg-blue-500/20 text-blue-400' if 'faculty' in request.endpoint }}">
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-blue-500/20 hover:text-blue-400 transition-colors {{ 'bg-blue-500/20 text-blue-400' if request.endpoint and 'faculty' in request.endpoint }}">
                 <i class="fas fa-chalkboard-teacher w-6 text-center"></i>
                 <span x-show="sidebarOpen" class="ml-3 font-medium">Academic Portal</span>
             </a>
@@ -194,14 +194,14 @@
                 x-show="sidebarOpen">Administration</div>
             {% if has_permission('users') %}
             <a href="{{ url_for('web.users') }}"
-                class="flex items-center px-4 py-3 rounded-lg hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors {{ 'bg-emerald-500/20 text-emerald-400' if 'users' in request.endpoint }}">
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors {{ 'bg-emerald-500/20 text-emerald-400' if request.endpoint and 'users' in request.endpoint }}">
                 <i class="fas fa-users-cog w-6 text-center"></i>
                 <span x-show="sidebarOpen" class="ml-3 font-medium">Registrar & HR</span>
             </a>
             {% endif %}
             {% if has_permission('audit_logs') %}
             <a href="{{ url_for('web.audit_logs') }}"
-                class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-500/20 hover:text-slate-300 transition-colors {{ 'bg-slate-500/20 text-slate-300' if 'audit-logs' in request.endpoint }}">
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-500/20 hover:text-slate-300 transition-colors {{ 'bg-slate-500/20 text-slate-300' if request.endpoint and 'audit-logs' in request.endpoint }}">
                 <i class="fas fa-clipboard-list w-6 text-center"></i>
                 <span x-show="sidebarOpen" class="ml-3 font-medium">System Audit</span>
             </a>
@@ -213,7 +213,7 @@
             <div class="mt-6 mb-2 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider"
                 x-show="sidebarOpen">Resources</div>
             <a href="{{ url_for('web.library_dashboard') }}"
-                class="flex items-center px-4 py-3 rounded-lg hover:bg-purple-500/20 hover:text-purple-400 transition-colors {{ 'bg-purple-500/20 text-purple-400' if 'library' in request.endpoint }}">
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-purple-500/20 hover:text-purple-400 transition-colors {{ 'bg-purple-500/20 text-purple-400' if request.endpoint and 'library' in request.endpoint }}">
                 <i class="fas fa-book w-6 text-center"></i>
                 <span x-show="sidebarOpen" class="ml-3 font-medium">Digital Library</span>
             </a>
@@ -225,14 +225,14 @@
                 x-show="sidebarOpen">Logistics</div>
             {% if has_permission('transport') %}
             <a href="{{ url_for('web.transport_dashboard') }}"
-                class="flex items-center px-4 py-3 rounded-lg hover:bg-yellow-500/20 hover:text-yellow-400 transition-colors {{ 'bg-yellow-500/20 text-yellow-400' if 'transport' in request.endpoint }}">
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-yellow-500/20 hover:text-yellow-400 transition-colors {{ 'bg-yellow-500/20 text-yellow-400' if request.endpoint and 'transport' in request.endpoint }}">
                 <i class="fas fa-bus w-6 text-center"></i>
                 <span x-show="sidebarOpen" class="ml-3 font-medium">Transport Ops</span>
             </a>
             {% endif %}
             {% if has_permission('cafeteria') %}
             <a href="{{ url_for('web.cafeteria_dashboard') }}"
-                class="flex items-center px-4 py-3 rounded-lg hover:bg-orange-500/20 hover:text-orange-400 transition-colors {{ 'bg-orange-500/20 text-orange-400' if 'cafeteria' in request.endpoint }}">
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-orange-500/20 hover:text-orange-400 transition-colors {{ 'bg-orange-500/20 text-orange-400' if request.endpoint and 'cafeteria' in request.endpoint }}">
                 <i class="fas fa-utensils w-6 text-center"></i>
                 <span x-show="sidebarOpen" class="ml-3 font-medium">Smart Cafeteria</span>
             </a>
@@ -245,14 +245,14 @@
                 x-show="sidebarOpen">Social & Finance</div>
             {% if has_permission('financial') %}
             <a href="{{ url_for('web.financial_dashboard') }}"
-                class="flex items-center px-4 py-3 rounded-lg hover:bg-green-500/20 hover:text-green-400 transition-colors {{ 'bg-green-500/20 text-green-400' if 'financial' in request.endpoint }}">
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-green-500/20 hover:text-green-400 transition-colors {{ 'bg-green-500/20 text-green-400' if request.endpoint and 'financial' in request.endpoint }}">
                 <i class="fas fa-wallet w-6 text-center"></i>
                 <span x-show="sidebarOpen" class="ml-3 font-medium">Financial Hub</span>
             </a>
             {% endif %}
             {% if has_permission('chat') %}
             <a href="{{ url_for('web.chat_dashboard') }}"
-                class="flex items-center px-4 py-3 rounded-lg hover:bg-pink-500/20 hover:text-pink-400 transition-colors {{ 'bg-pink-500/20 text-pink-400' if 'chat' in request.endpoint }}">
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-pink-500/20 hover:text-pink-400 transition-colors {{ 'bg-pink-500/20 text-pink-400' if request.endpoint and 'chat' in request.endpoint }}">
                 <i class="fas fa-comments w-6 text-center"></i>
                 <span x-show="sidebarOpen" class="ml-3 font-medium">Campus Chat</span>
             </a>
