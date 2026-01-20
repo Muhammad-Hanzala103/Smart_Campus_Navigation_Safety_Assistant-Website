@@ -184,8 +184,28 @@
             <a href="{{ url_for('web.faculty_dashboard') }}"
                 class="flex items-center px-4 py-3 rounded-lg hover:bg-blue-500/20 hover:text-blue-400 transition-colors {{ 'bg-blue-500/20 text-blue-400' if 'faculty' in request.endpoint }}">
                 <i class="fas fa-chalkboard-teacher w-6 text-center"></i>
-                <span x-show="sidebarOpen" class="ml-3 font-medium">Faculty Portal</span>
+                <span x-show="sidebarOpen" class="ml-3 font-medium">Academic Portal</span>
             </a>
+            {% endif %}
+
+            <!-- Industrial Administration -->
+            {% if has_permission('users') or has_permission('financial.payroll') or has_permission('audit_logs') %}
+            <div class="mt-6 mb-2 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider"
+                x-show="sidebarOpen">Administration</div>
+            {% if has_permission('users') %}
+            <a href="{{ url_for('web.users') }}"
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors {{ 'bg-emerald-500/20 text-emerald-400' if 'users' in request.endpoint }}">
+                <i class="fas fa-users-cog w-6 text-center"></i>
+                <span x-show="sidebarOpen" class="ml-3 font-medium">Registrar & HR</span>
+            </a>
+            {% endif %}
+            {% if has_permission('audit_logs') %}
+            <a href="{{ url_for('web.audit_logs') }}"
+                class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-500/20 hover:text-slate-300 transition-colors {{ 'bg-slate-500/20 text-slate-300' if 'audit-logs' in request.endpoint }}">
+                <i class="fas fa-clipboard-list w-6 text-center"></i>
+                <span x-show="sidebarOpen" class="ml-3 font-medium">System Audit</span>
+            </a>
+            {% endif %}
             {% endif %}
 
             <!-- Library -->
@@ -248,7 +268,12 @@
                 </div>
                 <div x-show="sidebarOpen" class="ml-3 overflow-hidden">
                     <p class="text-sm font-medium truncate">{{ session.get('user_name', 'User') }}</p>
-                    <p class="text-xs text-gray-500 truncate capitalize">{{ session.get('user_role', 'Guest') }}</p>
+                    <div class="flex flex-col">
+                        <span class="text-[9px] font-bold text-primary uppercase tracking-tighter">{{
+                            session.get('user_role', 'Guest') }}</span>
+                        <span class="text-[8px] text-gray-500 truncate">{{ session.get('campus_name', 'Global') }} | {{
+                            session.get('dept_name', 'HQ') }}</span>
+                    </div>
                 </div>
                 <a href="{{ url_for('web.logout') }}" x-show="sidebarOpen"
                     class="ml-auto text-gray-400 hover:text-white">

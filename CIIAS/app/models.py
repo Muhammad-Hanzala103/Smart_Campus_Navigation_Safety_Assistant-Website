@@ -3,6 +3,111 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 
 
+class Organization(db.Model):
+    __tablename__ = 'organizations'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    code = db.Column(db.String(20), unique=True) # e.g. "NUST"
+    website = db.Column(db.String(255))
+    logo_url = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'code': self.code,
+            'website': self.website,
+            'logo_url': self.logo_url
+        }
+
+class Campus(db.Model):
+    __tablename__ = 'campuses'
+    id = db.Column(db.Integer, primary_key=True)
+    org_id = db.Column(db.Integer, db.ForeignKey('organizations.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    location = db.Column(db.String(255))
+    contact_email = db.Column(db.String(120))
+    timezone = db.Column(db.String(50), default='UTC')
+    
+
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'org_id': self.org_id,
+            'name': self.name,
+            'location': self.location,
+            'timezone': self.timezone
+        }
+
+class Department(db.Model):
+    __tablename__ = 'departments'
+    id = db.Column(db.Integer, primary_key=True)
+    campus_id = db.Column(db.Integer, db.ForeignKey('campuses.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    code = db.Column(db.String(20)) # e.g. "CS", "ME"
+    type = db.Column(db.String(20), default='academic') # academic, administrative, support
+    
+
+    head_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'campus_id': self.campus_id,
+            'name': self.name,
+            'code': self.code,
+            'type': self.type
+        }
+
+class StaffDetail(db.Model):
+    __tablename__ = 'staff_details'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    cnic = db.Column(db.String(20), unique=True)
+    address = db.Column(db.Text)
+    designation = db.Column(db.String(100))
+    salary = db.Column(db.Float)
+    joining_date = db.Column(db.Date)
+    qualification = db.Column(db.Text)
+    licence_number = db.Column(db.String(50)) # For drivers
+    emergency_contact = db.Column(db.String(20))
+    
+
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'cnic': self.cnic,
+            'address': self.address,
+            'designation': self.designation,
+            'salary': self.salary,
+            'joining_date': self.joining_date.isoformat() if self.joining_date else None,
+            'licence_number': self.licence_number,
+            'emergency_contact': self.emergency_contact
+        }
+
+class Program(db.Model):
+    __tablename__ = 'programs'
+    id = db.Column(db.Integer, primary_key=True)
+    dept_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    code = db.Column(db.String(20)) # e.g. "BS-CS", "MBA"
+    total_credits = db.Column(db.Integer)
+    
+
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'dept_id': self.dept_id,
+            'dept_name': self.department.name if self.department else None,
+            'name': self.name,
+            'code': self.code,
+            'total_credits': self.total_credits
+        }
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -15,6 +120,12 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
     fcm_token = db.Column(db.String(256))  # For push notifications
+    
+    # Nexus 2.0 Hierarchy
+    campus_id = db.Column(db.Integer, db.ForeignKey('campuses.id'), nullable=True)
+    dept_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=True)
+    
+
     
     # Advanced Security Features
     totp_secret = db.Column(db.String(32))
@@ -68,12 +179,17 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'role': self.role,
+            'campus_id': self.campus_id,
+            'dept_id': self.dept_id,
+            'campus_name': self.campus.name if self.campus else None,
+            'dept_name': self.department.name if self.department else None,
             'profile_photo': self.profile_photo,
             'created_at': self.created_at.isoformat() if self.created_at else None
         }
         if include_phone:
             data['phone'] = self.phone
         return data
+
 
 
 class Incident(db.Model):
@@ -374,6 +490,7 @@ class Course(db.Model):
     name = db.Column(db.String(100), nullable=False)
     instructor_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     schedule = db.Column(db.String(100)) # e.g. "Mon,Wed 10:00-11:30"
+    credit_hours = db.Column(db.Integer, default=3)
     
     instructor = db.relationship('User', backref='courses_teaching')
 
@@ -383,7 +500,8 @@ class Course(db.Model):
             'code': self.code,
             'name': self.name,
             'instructor': self.instructor.name if self.instructor else 'Unassigned',
-            'schedule': self.schedule
+            'schedule': self.schedule,
+            'credit_hours': self.credit_hours
         }
 
 class Attendance(db.Model):
@@ -431,6 +549,67 @@ class ExamSeat(db.Model):
     user = db.relationship('User', backref='exam_seats')
     course = db.relationship('Course')
 
+class Assignment(db.Model):
+    __tablename__ = 'assignments'
+    id = db.Column(db.Integer, primary_key=True)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
+    title = db.Column(db.String(200), nullable=False)
+    description = db.Column(db.Text)
+    due_date = db.Column(db.DateTime, nullable=False)
+    total_marks = db.Column(db.Integer, default=100)
+    file_url = db.Column(db.String(256))
+    
+    course = db.relationship('Course', backref='assignments')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'course_id': self.course_id,
+            'title': self.title,
+            'due_date': self.due_date.isoformat() if self.due_date else None,
+            'total_marks': self.total_marks
+        }
+
+class AssignmentSubmission(db.Model):
+    __tablename__ = 'assignment_submissions'
+    id = db.Column(db.Integer, primary_key=True)
+    assignment_id = db.Column(db.Integer, db.ForeignKey('assignments.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    submission_date = db.Column(db.DateTime, default=datetime.utcnow)
+    file_url = db.Column(db.String(256))
+    obtained_marks = db.Column(db.Float)
+    teacher_remarks = db.Column(db.Text)
+    
+    assignment = db.relationship('Assignment', backref='submissions')
+    student = db.relationship('User', backref='assignment_submissions')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'obtained_marks': self.obtained_marks,
+            'submission_date': self.submission_date.isoformat() if self.submission_date else None
+        }
+
+class TeacherFeedback(db.Model):
+    __tablename__ = 'teacher_feedbacks'
+    id = db.Column(db.Integer, primary_key=True)
+    teacher_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    student_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
+    rating = db.Column(db.Integer) # 1-5
+    comments = db.Column(db.Text)
+    semester = db.Column(db.String(20))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class DateSheet(db.Model):
+    __tablename__ = 'datesheets'
+    id = db.Column(db.Integer, primary_key=True)
+    campus_id = db.Column(db.Integer, db.ForeignKey('campuses.id'))
+    exam_type = db.Column(db.String(50)) # Midterm, Final, Sessional
+    semester = db.Column(db.String(50))
+    file_url = db.Column(db.String(256)) # PDF Link
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Shuttle(db.Model):
     __tablename__ = 'shuttles'
     id = db.Column(db.Integer, primary_key=True)
@@ -441,6 +620,14 @@ class Shuttle(db.Model):
     current_lng = db.Column(db.Float)
     heading = db.Column(db.Float, default=0.0)
     last_updated = db.Column(db.DateTime)
+    
+    # Nexus 2.0 Enhancements
+    campus_id = db.Column(db.Integer, db.ForeignKey('campuses.id'))
+    driver_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    capacity = db.Column(db.Integer)
+    model = db.Column(db.String(50))
+    
+    driver = db.relationship('User', backref='shuttle_assigned')
 
     def to_dict(self):
         return {
@@ -451,6 +638,9 @@ class Shuttle(db.Model):
             'current_lat': self.current_lat,
             'current_lng': self.current_lng,
             'heading': self.heading,
+            'driver_name': self.driver.name if self.driver else "Unassigned",
+            'capacity': self.capacity,
+            'model': self.model,
             'last_updated': self.last_updated.isoformat() if self.last_updated else None
         }
 
@@ -492,6 +682,12 @@ class CafeteriaItem(db.Model):
     image_url = db.Column(db.String(256))
     is_available = db.Column(db.Boolean, default=True)
     category = db.Column(db.String(50)) # Snacks, Drinks, Meals
+    
+    # Nexus 2.0 Multi-Campus Support
+    campus_id = db.Column(db.Integer, db.ForeignKey('campuses.id'))
+    cafeteria_name = db.Column(db.String(100), default='Main Cafe')
+    
+    campus = db.relationship('Campus', backref='cafeteria_items')
 
     def to_dict(self):
         return {
@@ -500,7 +696,9 @@ class CafeteriaItem(db.Model):
             'price': self.price,
             'image_url': self.image_url,
             'is_available': self.is_available,
-            'category': self.category
+            'category': self.category,
+            'campus_id': self.campus_id,
+            'cafeteria_name': self.cafeteria_name
         }
 
 
@@ -572,4 +770,19 @@ class ChatMessage(db.Model):
             'timestamp': self.timestamp.isoformat() if self.timestamp else None,
             'is_read': self.is_read
         }
+
+# ==================== Relationships (Nexus 2.0 Resilience) ====================
+
+Campus.organization = db.relationship('Organization', backref='campuses')
+Department.campus = db.relationship('Campus', backref='departments')
+Program.department = db.relationship('Department', backref='programs')
+
+User.campus = db.relationship('Campus', backref='campus_members', foreign_keys=[User.campus_id])
+User.department = db.relationship('Department', backref='dept_members', foreign_keys=[User.dept_id])
+User.headed_dept = db.relationship('Department', backref='hod', foreign_keys='Department.head_id', uselist=False)
+
+StaffDetail.user = db.relationship('User', backref=db.backref('staff_record', uselist=False))
+
+CafeteriaItem.campus = db.relationship('Campus', backref='cafeteria_items')
+Shuttle.campus = db.relationship('Campus', backref='shuttles')
 

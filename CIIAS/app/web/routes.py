@@ -1,7 +1,12 @@
 from flask import Blueprint, render_template, redirect, url_for, request, session, flash, jsonify
 from app.models import User, Incident, Booking, AuditLog, MapNode
 from app import db, oauth
-from app.utils import login_required, role_required, ROLE_ADMIN, ROLE_SECURITY, ROLE_STAFF, has_permission
+from app.utils import (
+    login_required, role_required, has_permission,
+    ROLE_ADMIN, ROLE_SECURITY, ROLE_STAFF, ROLE_HOD, ROLE_TEACHER,
+    ROLE_FINANCE, ROLE_TRANSPORT, ROLE_CAFETERIA, ROLE_LIBRARIAN,
+    ROLE_REGISTRAR, ROLE_HR, ROLE_STUDENT
+)
 from datetime import datetime
 
 web_bp = Blueprint('web', __name__)
@@ -39,6 +44,8 @@ def login():
             session['user_name'] = user.name
             session['user_role'] = user.role
             session['user_email'] = user.email
+            session['campus_name'] = user.campus.name if user.campus else 'Global'
+            session['dept_name'] = user.department.name if user.department else 'Headquarters'
             # Log action
             log = AuditLog(user_id=user.id, action='LOGIN', details=f'User logged in from web')
             db.session.add(log)
@@ -95,6 +102,8 @@ def verify_2fa():
             session['user_name'] = user.name
             session['user_role'] = user.role
             session['user_email'] = user.email
+            session['campus_name'] = user.campus.name if user.campus else 'Global'
+            session['dept_name'] = user.department.name if user.department else 'Headquarters'
             
             user.otp_code = None # Clear OTP
             db.session.commit()
@@ -143,6 +152,8 @@ def google_authorize():
     session['user_name'] = user.name
     session['user_role'] = user.role
     session['user_email'] = user.email
+    session['campus_name'] = user.campus.name if user.campus else 'Global'
+    session['dept_name'] = user.department.name if user.department else 'Headquarters'
     
     log = AuditLog(user_id=user.id, action='LOGIN_GOOGLE', details='User logged in via Google OAuth')
     db.session.add(log)
@@ -234,7 +245,7 @@ def security_dashboard():
 from app.models import Course, Shuttle # Import new models
 @web_bp.route('/faculty')
 @login_required
-# @role_required(ROLE_ADMIN, ROLE_STAFF) # Loosened for demo
+@role_required(ROLE_ADMIN, ROLE_HOD, ROLE_TEACHER)
 def faculty_dashboard():
     courses = Course.query.all()
     # If using user-specific courses: courses = Course.query.filter_by(instructor_id=session['user_id']).all()
@@ -243,6 +254,7 @@ def faculty_dashboard():
 # ============== TRANSPORT MODULE ==============
 @web_bp.route('/transport')
 @login_required
+@role_required(ROLE_ADMIN, ROLE_TRANSPORT, ROLE_SECURITY)
 def transport_dashboard():
     shuttles = Shuttle.query.all()
     # Convert manually to avoid serialization issues in template
@@ -259,6 +271,7 @@ def transport_dashboard():
 from app.models import Book
 @web_bp.route('/library')
 @login_required
+@role_required(ROLE_ADMIN, ROLE_LIBRARIAN, ROLE_STUDENT)
 def library_dashboard():
     books = Book.query.all()
     return render_template('library_dashboard.html', books=books)
@@ -319,7 +332,7 @@ def system_status():
 
 # ============== USERS (Admin Only) ==============
 @web_bp.route('/users')
-@role_required(ROLE_ADMIN)
+@role_required(ROLE_ADMIN, ROLE_REGISTRAR, ROLE_HR)
 def users():
     all_users = User.query.order_by(User.created_at.desc()).all()
     return render_template('users.html', users=all_users)
@@ -341,13 +354,13 @@ def update_user_role(id):
 
 # ============== ANALYTICS ==============
 @web_bp.route('/analytics')
-@role_required(ROLE_ADMIN, ROLE_SECURITY)
+@role_required(ROLE_ADMIN, ROLE_HOD, ROLE_SECURITY)
 def analytics():
     return render_template('analytics.html')
 
 # ============== AUDIT LOGS (Admin Only) ==============
 @web_bp.route('/audit-logs')
-@role_required(ROLE_ADMIN)
+@role_required(ROLE_ADMIN, ROLE_HR, ROLE_FINANCE)
 def audit_logs():
     logs = AuditLog.query.order_by(AuditLog.timestamp.desc()).limit(100).all()
     return render_template('audit_logs.html', logs=logs)
@@ -485,6 +498,7 @@ def sitemap():
 from app.models import CafeteriaItem, CafeteriaOrder
 @web_bp.route('/cafeteria')
 @login_required
+@role_required(ROLE_ADMIN, ROLE_CAFETERIA, ROLE_STUDENT)
 def cafeteria_dashboard():
     items = CafeteriaItem.query.all()
     # For demo, fetch recent orders
@@ -495,6 +509,7 @@ def cafeteria_dashboard():
 from app.models import Wallet, FeeChallan
 @web_bp.route('/financial')
 @login_required
+@role_required(ROLE_ADMIN, ROLE_FINANCE, ROLE_STUDENT)
 def financial_dashboard():
     # Ensure user has a wallet
     wallet = Wallet.query.get(session['user_id'])

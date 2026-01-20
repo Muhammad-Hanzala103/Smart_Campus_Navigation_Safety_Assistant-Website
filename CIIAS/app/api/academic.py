@@ -1,7 +1,12 @@
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import Course, Attendance, Grade, User, Enrollment, ExamSeat
+from app.models import (
+    Course, Attendance, Grade, User, Enrollment, 
+    ExamSeat, Assignment, AssignmentSubmission, TeacherFeedback, DateSheet
+)
 from datetime import datetime
+
+
 
 academic_bp = Blueprint('academic', __name__)
 
@@ -40,51 +45,40 @@ def get_my_courses():
 
 @academic_bp.route('/results', methods=['GET'])
 def get_results():
-    # Helper to calculate GPA
-    def calculate_gpa(marks):
-        if marks >= 85: return 4.0
-        if marks >= 80: return 3.7
-        if marks >= 75: return 3.3
-        if marks >= 70: return 3.0
-        if marks >= 65: return 2.7
-        if marks >= 60: return 2.3
-        return 0.0
-
-    # Mock user for demo if not logged in
-    user_id = 1 # Force user 1 for demo or get from session
-    
-    # In real app, query Enrollments/Grades
+    user_id = request.args.get('user_id', 1)
     enrollments = Enrollment.query.filter_by(user_id=user_id).all()
     
     results = []
-    total_gpa = 0
-    count = 0
+    total_weighted_points = 0.0
+    total_credits = 0.0
+    
+    # Industrial Standard Grade Point Mapping
+    grade_points = {
+        'A': 4.0, 'A-': 3.7, 'B+': 3.3, 'B': 3.0, 'B-': 2.7, 
+        'C+': 2.3, 'C': 2.0, 'C-': 1.7, 'D+': 1.3, 'D': 1.0, 'F': 0.0
+    }
     
     for enroll in enrollments:
-        # Mock grade calculation logic based on letter grade
-        grade_point = 0.0
-        if enroll.grade == 'A': grade_point = 4.0
-        elif enroll.grade == 'A-': grade_point = 3.7
-        elif enroll.grade == 'B+': grade_point = 3.3
-        elif enroll.grade == 'B': grade_point = 3.0
-        elif enroll.grade == 'B-': grade_point = 2.7
+        gp = grade_points.get(enroll.grade, 0.0)
+        credits = enroll.course.credit_hours or 3
         
         results.append({
             "course_code": enroll.course.code,
             "course_name": enroll.course.name,
-            "grade": enroll.grade, # 'A', 'B', 'In Progress'
+            "grade": enroll.grade,
+            "credits": credits,
             "semester": enroll.semester
         })
         
         if enroll.grade != 'In Progress':
-            total_gpa += grade_point
-            count += 1
+            total_weighted_points += (gp * credits)
+            total_credits += credits
             
-    cgpa = round(total_gpa / count, 2) if count > 0 else 3.5 # Default mock
+    cgpa = round(total_weighted_points / total_credits, 2) if total_credits > 0 else 0.0
     
     return jsonify({
         "cgpa": cgpa,
-        "semester": "Fall 2023",
+        "total_credits_earned": total_credits,
         "results": results
     })
 
@@ -187,3 +181,67 @@ def upload_grade():
     db.session.add(grade)
     db.session.commit()
     return jsonify({'message': 'Grade uploaded'}), 201
+
+# ==================== LMS: ASSIGNMENTS ====================
+
+@academic_bp.route('/assignments', methods=['GET'])
+def get_assignments():
+    course_id = request.args.get('course_id')
+    if course_id:
+        assignments = Assignment.query.filter_by(course_id=course_id).all()
+    else:
+        # Get assignments for all courses the user is enrolled in
+        user_id = request.args.get('user_id', 1)
+        enrollments = Enrollment.query.filter_by(user_id=user_id).all()
+        course_ids = [e.course_id for e in enrollments]
+        assignments = Assignment.query.filter(Assignment.course_id.in_(course_ids)).all()
+        
+    return jsonify([a.to_dict() for a in assignments]), 200
+
+@academic_bp.route('/assignments/submit', methods=['POST'])
+def submit_assignment():
+    data = request.json
+    submission = AssignmentSubmission(
+        assignment_id=data.get('assignment_id'),
+        student_id=data.get('student_id'),
+        file_url=data.get('file_url')
+    )
+    db.session.add(submission)
+    db.session.commit()
+    return jsonify({'message': 'Assignment submitted successfully'}), 201
+
+# ==================== LMS: FEEDBACK ====================
+
+@academic_bp.route('/feedback/submit', methods=['POST'])
+def submit_feedback():
+    data = request.json
+    feedback = TeacherFeedback(
+        teacher_id=data.get('teacher_id'),
+        student_id=data.get('student_id'),
+        course_id=data.get('course_id'),
+        rating=data.get('rating'),
+        comments=data.get('comments'),
+        semester=data.get('semester', 'Fall 2023')
+    )
+    db.session.add(feedback)
+    db.session.commit()
+    return jsonify({'message': 'Feedback submitted successfully'}), 201
+
+# ==================== LMS: DATESHEETS ====================
+
+@academic_bp.route('/datesheet', methods=['GET'])
+def get_datesheet():
+    campus_id = request.args.get('campus_id')
+    if not campus_id:
+        campus_id = 1
+    
+    datesheets = DateSheet.query.filter_by(campus_id=campus_id).order_by(DateSheet.created_at.desc()).all()
+    return jsonify([
+        {
+            'id': d.id,
+            'exam_type': d.exam_type,
+            'semester': d.semester,
+            'file_url': d.file_url,
+            'created_at': d.created_at.isoformat()
+        } for d in datesheets
+    ]), 200

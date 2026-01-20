@@ -1,0 +1,44 @@
+python.exe : 
+Traceback (most 
+recent call last):
+At line:1 char:1
++ & "c:\New folder\Pr
+ojects\SSNS\.venv\Scr
+ipts\python.exe" 
+update_db.py ...
++ ~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (Traceba   
+ ck (most recent     
+call last)::Stri    
+ng) [], RemoteEx    
+ception
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+  File "C:\New folder
+\Projects\SSNS\CIIAS\
+update_db.py", line 
+2, in <module>
+    from app.models 
+import (
+    ...<3 lines>...
+    )
+  File "C:\New folder
+\Projects\SSNS\CIIAS\
+app\models.py", line 
+206, in <module>
+    
+CafeteriaItem.campus 
+= db.relationship('Ca
+mpus', backref='cafet
+eria_items')
+    ^^^^^^^^^^^^^
+NameError: name 
+'CafeteriaItem' is 
+not defined

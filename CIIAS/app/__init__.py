@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from config import config
@@ -18,7 +18,7 @@ limiter = Limiter(key_func=get_remote_address)
 oauth = OAuth()
 mail = Mail()
 
-def create_app(config_name='default'):
+def create_app(config_name='default', init_blueprints=True):
     app = Flask(__name__, template_folder='templates', static_folder='static')
     app.config.from_object(config[config_name])
     
@@ -46,52 +46,50 @@ def create_app(config_name='default'):
         }
     )
     
-    # Register Socket Events
-    with app.app_context():
-        from app import socket_events
-    
-    # Register API Blueprints
-    from app.api.auth import auth_bp
-    from app.api.profile import profile_bp
-    from app.api.map import map_bp
-    from app.api.bookings import booking_bp
-    from app.api.incidents import incident_bp
-    from app.api.emergency import emergency_bp
-    from app.api.notifications import notifications_bp
-    from app.api.rooms import rooms_bp
-    from app.api.analytics import analytics_bp
-    from app.api.analytics import analytics_bp
-    # New Blueprints
-    from app.api.academic import academic_bp
-    from app.api.transport import transport_bp
-    from app.api.library import library_bp
-    from app.api.engagement import engagement_bp
-    from app.api.cafeteria import cafeteria_bp
-    from app.api.chat import chat_bp
-    from app.api.financial import financial_bp
-    from app.web.routes import web_bp
-    
-    app.register_blueprint(auth_bp, url_prefix='/api/auth')
-    app.register_blueprint(profile_bp, url_prefix='/api/profile')
-    app.register_blueprint(map_bp, url_prefix='/api/map')
-    app.register_blueprint(booking_bp, url_prefix='/api/bookings')
-    app.register_blueprint(incident_bp, url_prefix='/api/incidents')
-    app.register_blueprint(emergency_bp, url_prefix='/api/emergency')
-    app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
-    app.register_blueprint(rooms_bp, url_prefix='/api/rooms')
-    app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
-    
-    # Register New Blueprints
-    app.register_blueprint(academic_bp, url_prefix='/api/academic')
-    app.register_blueprint(transport_bp, url_prefix='/api/transport')
-    app.register_blueprint(library_bp, url_prefix='/api/library')
-    app.register_blueprint(engagement_bp, url_prefix='/api/engagement')
-    app.register_blueprint(cafeteria_bp, url_prefix='/api/cafeteria')
-    app.register_blueprint(chat_bp, url_prefix='/api/chat')
-    app.register_blueprint(financial_bp, url_prefix='/api/financial')
-    
-    app.register_blueprint(web_bp)
-    
+    if init_blueprints:
+        # Register Socket Events
+        with app.app_context():
+            from app import socket_events
+        
+        # Register Blueprints
+        from app.api.auth import auth_bp
+        from app.api.profile import profile_bp
+        from app.api.map import map_bp
+        from app.api.bookings import booking_bp
+        from app.api.incidents import incident_bp
+        from app.api.emergency import emergency_bp
+        from app.api.notifications import notifications_bp
+        from app.api.rooms import rooms_bp
+        from app.api.analytics import analytics_bp
+        from app.api.academic import academic_bp
+        from app.api.transport import transport_bp
+        from app.api.library import library_bp
+        from app.api.engagement import engagement_bp
+        from app.api.cafeteria import cafeteria_bp
+        from app.api.chat import chat_bp
+        from app.api.financial import financial_bp
+        from app.api.data import data_bp
+        from app.web.routes import web_bp
+        
+        app.register_blueprint(auth_bp, url_prefix='/api/auth')
+        app.register_blueprint(profile_bp, url_prefix='/api/profile')
+        app.register_blueprint(map_bp, url_prefix='/api/map')
+        app.register_blueprint(booking_bp, url_prefix='/api/bookings')
+        app.register_blueprint(incident_bp, url_prefix='/api/incidents')
+        app.register_blueprint(emergency_bp, url_prefix='/api/emergency')
+        app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
+        app.register_blueprint(rooms_bp, url_prefix='/api/rooms')
+        app.register_blueprint(analytics_bp, url_prefix='/api/analytics')
+        app.register_blueprint(academic_bp, url_prefix='/api/academic')
+        app.register_blueprint(transport_bp, url_prefix='/api/transport')
+        app.register_blueprint(library_bp, url_prefix='/api/library')
+        app.register_blueprint(engagement_bp, url_prefix='/api/engagement')
+        app.register_blueprint(cafeteria_bp, url_prefix='/api/cafeteria')
+        app.register_blueprint(chat_bp, url_prefix='/api/chat')
+        app.register_blueprint(financial_bp, url_prefix='/api/financial')
+        app.register_blueprint(data_bp, url_prefix='/api/data')
+        app.register_blueprint(web_bp)
+
     # Industrial Security Headers
     @app.after_request
     def add_security_headers(response):

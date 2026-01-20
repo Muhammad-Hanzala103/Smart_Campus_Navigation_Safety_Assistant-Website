@@ -8,15 +8,47 @@ transport_bp = Blueprint('transport', __name__)
 @transport_bp.route('/live', methods=['GET'])
 def get_live_shuttles():
     """Get live location of all active shuttles"""
-    shuttles = Shuttle.query.filter_by(status='Active').all()
+    campus_id = request.args.get('campus_id')
+    query = Shuttle.query.filter_by(status='Active')
+    if campus_id:
+        query = query.filter_by(campus_id=campus_id)
+        
+    shuttles = query.all()
     return jsonify([s.to_dict() for s in shuttles]), 200
 
 @transport_bp.route('/shuttles', methods=['GET'])
 def get_all_shuttles():
-    shuttles = Shuttle.query.all()
-    # Sort: Active first
-    shuttles.sort(key=lambda x: x.status == 'Active', reverse=True)
-    return jsonify([s.to_dict() for s in shuttles]), 200
+    """Get all shuttles with optional campus filtering and driver details"""
+    campus_id = request.args.get('campus_id')
+    query = Shuttle.query
+    if campus_id:
+        query = query.filter_by(campus_id=campus_id)
+        
+    shuttles = query.all()
+    # Industrial Sort: Active first
+    shuttles.sort(key=lambda s: (s.status == 'Active'), reverse=True)
+    
+    return jsonify([{
+        **s.to_dict(),
+        'campus_name': s.campus.name if s.campus else 'N/A',
+        'driver_phone': s.driver.phone if s.driver else 'N/A'
+    } for s in shuttles]), 200
+
+@transport_bp.route('/driver/<int:driver_id>', methods=['GET'])
+def get_driver_details(driver_id):
+    """Get detailed record of a driver (Nexus 2.0 HR Record)"""
+    from app.models import User
+    driver = User.query.get(driver_id)
+    if not driver:
+        return jsonify({'error': 'Driver not found'}), 404
+        
+    return jsonify({
+        'name': driver.name,
+        'phone': driver.phone,
+        'email': driver.email,
+        'address': driver.staff_record.address if driver.staff_record else 'N/A',
+        'licence': driver.staff_record.licence_number if driver.staff_record else 'N/A'
+    }), 200
 
 @transport_bp.route('/shuttle/update_location', methods=['POST'])
 def update_location():
