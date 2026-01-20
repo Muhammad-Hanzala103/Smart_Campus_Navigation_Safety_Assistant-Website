@@ -90,6 +90,15 @@ def create_app(config_name='default', init_blueprints=True):
         app.register_blueprint(data_bp, url_prefix='/api/data')
         app.register_blueprint(web_bp)
 
+    @app.context_processor
+    def inject_permissions():
+        """Make permissions available in all templates globally"""
+        from flask import session
+        from app.utils import has_permission
+        def check_permission(permission):
+            return has_permission(session.get('user_role', 'student'), permission)
+        return dict(has_permission=check_permission)
+
     # Industrial Security Headers
     @app.after_request
     def add_security_headers(response):

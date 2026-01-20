@@ -11,12 +11,7 @@ from datetime import datetime
 
 web_bp = Blueprint('web', __name__)
 
-@web_bp.context_processor
-def inject_permissions():
-    """Make permissions available in all templates"""
-    def check_permission(permission):
-        return has_permission(session.get('user_role', 'student'), permission)
-    return dict(has_permission=check_permission)
+# Permissions logic moved to global factory in app/__init__.py
 
 # ============== AUTH ==============
 @web_bp.route('/login', methods=['GET', 'POST'])
