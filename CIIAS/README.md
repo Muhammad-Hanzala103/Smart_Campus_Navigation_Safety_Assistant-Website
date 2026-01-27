@@ -57,7 +57,18 @@
     ```bash
     python wsgi.py
     ```
+    python wsgi.py
+    ```
     Visit `http://localhost:5000` to see the new **Product Showcase Landing Page**.
+
+4.  **Database Migration (Enterprise Edition):**
+    ```bash
+    flask db migrate -m "Enterprise Schema"
+    flask db upgrade
+    ```
+
+5.  **API Documentation:**
+    Visit `http://localhost:5000/apidocs` for the interactive Swagger UI.
 
 ## ☁️ Deployment (Vercel)
 

@@ -66,6 +66,7 @@ def create_app(config_name='default', init_blueprints=True):
         from app.api.incidents import incident_bp
         from app.api.emergency import emergency_bp
         from app.api.reports import reports_bp
+        from app.api.health import health_bp
         from app.api.notifications import notifications_bp
         from app.api.rooms import rooms_bp
         from app.api.analytics import analytics_bp
@@ -87,6 +88,7 @@ def create_app(config_name='default', init_blueprints=True):
         app.register_blueprint(incident_bp, url_prefix='/api/incidents')
         app.register_blueprint(emergency_bp, url_prefix='/api/emergency')
         app.register_blueprint(reports_bp, url_prefix='/api/reports')
+        app.register_blueprint(health_bp, url_prefix='/api/health')
         app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
         app.register_blueprint(rooms_bp, url_prefix='/api/rooms')
         app.register_blueprint(analytics_bp, url_prefix='/api/analytics')

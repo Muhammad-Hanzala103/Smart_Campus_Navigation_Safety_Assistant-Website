@@ -22,3 +22,6 @@ Authlib==1.3.0
 Flask-Mail==0.9.1
 pyotp==2.9.0
 qrcode==8.0
+Flask-Caching==2.1.0
+flasgger==0.9.7.1
+cryptography==42.0.0
