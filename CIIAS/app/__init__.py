@@ -1,5 +1,6 @@
 import os
 from flask import Flask, render_template
+from app.services.cache import cache
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from config import config
@@ -33,7 +34,10 @@ def create_app(config_name='default', init_blueprints=True):
     compress.init_app(app)
     limiter.init_app(app)
     oauth.init_app(app)
+    limiter.init_app(app)
+    oauth.init_app(app)
     mail.init_app(app)
+    cache.init_app(app)
 
     # Register Google OAuth
     oauth.register(
@@ -58,6 +62,7 @@ def create_app(config_name='default', init_blueprints=True):
         from app.api.bookings import booking_bp
         from app.api.incidents import incident_bp
         from app.api.emergency import emergency_bp
+        from app.api.reports import reports_bp
         from app.api.notifications import notifications_bp
         from app.api.rooms import rooms_bp
         from app.api.analytics import analytics_bp
@@ -78,6 +83,7 @@ def create_app(config_name='default', init_blueprints=True):
         app.register_blueprint(booking_bp, url_prefix='/api/bookings')
         app.register_blueprint(incident_bp, url_prefix='/api/incidents')
         app.register_blueprint(emergency_bp, url_prefix='/api/emergency')
+        app.register_blueprint(reports_bp, url_prefix='/api/reports')
         app.register_blueprint(notifications_bp, url_prefix='/api/notifications')
         app.register_blueprint(rooms_bp, url_prefix='/api/rooms')
         app.register_blueprint(analytics_bp, url_prefix='/api/analytics')

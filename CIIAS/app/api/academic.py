@@ -6,6 +6,7 @@ from app.models import (
     GradingPolicy
 )
 from app.utils import tenant_required
+from app.services.cache import cache, make_cache_key
 from datetime import datetime
 
 
@@ -16,6 +17,7 @@ academic_bp = Blueprint('academic', __name__)
 
 @academic_bp.route('/courses', methods=['GET'])
 @tenant_required
+@cache.cached(timeout=300, key_prefix=make_cache_key)
 def get_courses(uni):
     courses = Course.query.filter_by(university_id=uni.id).all()
     return jsonify([c.to_dict() for c in courses]), 200
@@ -47,6 +49,7 @@ def get_my_courses():
 # ==================== RESULTS (ANDROID) ====================
 
 @academic_bp.route('/results', methods=['GET'])
+@cache.cached(timeout=60, key_prefix=make_cache_key)
 def get_results():
     user_id = request.args.get('user_id', 1)
     enrollments = Enrollment.query.filter_by(user_id=user_id).all()

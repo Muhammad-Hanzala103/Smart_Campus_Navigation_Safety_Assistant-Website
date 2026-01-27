@@ -177,6 +177,12 @@ class UniversityConfig(db.Model):
             'map_center': {'lat': self.map_lat, 'lng': self.map_lng}
         }
 
+# Association table for Parent-Child relationship
+parent_child = db.Table('parent_child',
+    db.Column('parent_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    db.Column('child_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
+)
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -196,6 +202,16 @@ class User(db.Model):
     # Nexus 2.0 Hierarchy
     campus_id = db.Column(db.Integer, db.ForeignKey('campuses.id'), nullable=True)
     dept_id = db.Column(db.Integer, db.ForeignKey('departments.id'), nullable=True)
+    
+    # Parent Portal Relationship
+    children = db.relationship(
+        'User', 
+        secondary=parent_child,
+        primaryjoin=(parent_child.c.parent_id == id),
+        secondaryjoin=(parent_child.c.child_id == id),
+        backref=db.backref('parents', lazy='dynamic'),
+        lazy='dynamic'
+    )
     
 
     
