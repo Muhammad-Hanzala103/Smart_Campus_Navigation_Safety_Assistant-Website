@@ -953,3 +953,24 @@ class GradingPolicy(db.Model):
             'config': self.config,
             'is_active': self.is_active
         }
+
+
+class Webhook(db.Model):
+    __tablename__ = 'webhooks'
+    id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
+    url = db.Column(db.String(256), nullable=False)
+    event_type = db.Column(db.String(50), nullable=False) # payment_received, user_registered, etc.
+    secret_key = db.Column(db.String(64)) # For signature verification
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    university = db.relationship('University', backref='webhooks')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'url': self.url,
+            'event_type': self.event_type,
+            'is_active': self.is_active
+        }

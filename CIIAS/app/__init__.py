@@ -18,7 +18,6 @@ socketio = SocketIO()
 compress = Compress()
 limiter = Limiter(key_func=get_remote_address)
 oauth = OAuth()
-oauth = OAuth()
 mail = Mail()
 swagger = Swagger()
 
