@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import request, jsonify, current_app, session, redirect, url_for, flash
+from flask import request, jsonify, current_app, session, redirect, url_for, flash, g
 import jwt
 
 def token_required(f):
@@ -21,6 +21,7 @@ def token_required(f):
         except Exception as e:
             return jsonify({'message': f'Token invalid: {str(e)}'}), 401
             
+        g.current_user = current_user
         return f(current_user, *args, **kwargs)
     return decorated
 
@@ -46,6 +47,7 @@ def tenant_required(f):
         if api_key and uni.api_key != api_key:
             return jsonify({'message': 'Invalid University API Key'}), 403
             
+        g.current_tenant = uni
         return f(uni, *args, **kwargs)
     return decorated
 

@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from app import db
 from app.models import FeeChallan, University
 from app.utils import token_required
+from app.audit import track_action
 
 financial_bp = Blueprint('financial', __name__)
 
@@ -17,6 +18,7 @@ def get_challans(current_user):
 
 @financial_bp.route('/challans/<int:id>/pay', methods=['POST'])
 @token_required
+@track_action(action_name='pay_challan', resource_id_field='id')
 def pay_challan(current_user, id):
     """Mock payment for a challan"""
     challan = FeeChallan.query.filter_by(id=id, user_id=current_user.id).first()

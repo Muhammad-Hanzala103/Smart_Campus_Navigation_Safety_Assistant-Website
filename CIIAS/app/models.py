@@ -892,3 +892,29 @@ CafeteriaItem.campus = db.relationship('Campus', backref='cafeteria_items')
 Shuttle.campus = db.relationship('Campus', backref='shuttles')
 MapPOI.campus = db.relationship('Campus', backref='pois')
 
+
+class AuditLog(db.Model):
+    __tablename__ = 'audit_logs'
+    id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    action = db.Column(db.String(100), nullable=False)
+    resource = db.Column(db.String(100))
+    ip_address = db.Column(db.String(45))
+    details = db.Column(db.Text)
+    status = db.Column(db.String(20), default='success')
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+    university = db.relationship('University', backref='audit_logs')
+    user = db.relationship('User', backref='audit_logs')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'user_name': self.user.name if self.user else 'System',
+            'action': self.action,
+            'resource': self.resource,
+            'status': self.status,
+            'timestamp': self.timestamp.isoformat()
+        }
