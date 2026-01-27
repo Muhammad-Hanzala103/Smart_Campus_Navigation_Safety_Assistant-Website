@@ -2,6 +2,7 @@ import requests
 import json
 import hashlib
 import hmac
+from flask import current_app
 from app import db
 from app.models import Webhook
 
@@ -35,11 +36,12 @@ class WebhookSender:
                 # response = requests.post(hook.url, json=payload, headers=headers, timeout=5)
                 # results.append({'url': hook.url, 'status': response.status_code})
                 
-                print(f"[Webhook] Dispatched {event_type} to {hook.url}")
+                
+                current_app.logger.info(f"[Webhook] Dispatched {event_type} to {hook.url}")
                 results.append({'url': hook.url, 'status': 'dispatched (mock)'})
                 
             except Exception as e:
-                print(f"[Webhook] Failed to send {event_type} to {hook.url}: {e}")
+                current_app.logger.error(f"[Webhook] Failed to send {event_type} to {hook.url}: {e}")
                 results.append({'url': hook.url, 'status': 'failed'})
                 
         return results

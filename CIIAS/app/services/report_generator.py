@@ -1,6 +1,7 @@
 import csv
 import io
 from app.models import Attendance, Course, Enrollment, User
+from sqlalchemy.orm import joinedload
 
 class ReportGenerator:
     @staticmethod
@@ -8,7 +9,8 @@ class ReportGenerator:
         """
         Generate a CSV report of attendance for a student.
         """
-        records = Attendance.query.filter_by(student_id=user_id).all()
+        # Optimized query with eager loading for 'course' relationship
+        records = Attendance.query.filter_by(student_id=user_id).options(joinedload(Attendance.course)).all()
         
         output = io.StringIO()
         writer = csv.writer(output)
@@ -33,7 +35,8 @@ class ReportGenerator:
         """
         Generate a CSV report of grades/results.
         """
-        enrollments = Enrollment.query.filter_by(user_id=user_id).all()
+        # Optimized query with eager loading for 'course' relationship
+        enrollments = Enrollment.query.filter_by(user_id=user_id).options(joinedload(Enrollment.course)).all()
         
         output = io.StringIO()
         writer = csv.writer(output)

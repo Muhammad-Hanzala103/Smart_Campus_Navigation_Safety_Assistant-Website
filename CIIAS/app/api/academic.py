@@ -7,6 +7,7 @@ from app.models import (
 )
 from app.utils import tenant_required
 from app.services.cache import cache, make_cache_key
+from sqlalchemy.orm import joinedload
 from datetime import datetime
 
 
@@ -57,7 +58,7 @@ def get_my_courses():
         
     if user.role == 'student':
         # Use Enrollments table
-        enrollments = Enrollment.query.filter_by(user_id=user_id).all()
+        enrollments = Enrollment.query.filter_by(user_id=user_id).options(joinedload(Enrollment.course)).all()
         courses = [e.course for e in enrollments]
     elif user.role in ['staff', 'admin', 'faculty']:
         courses = Course.query.filter_by(instructor_id=user_id).all()
@@ -93,8 +94,9 @@ def get_results():
             results:
               type: array
     """
-    user_id = request.args.get('user_id', 1)
-    enrollments = Enrollment.query.filter_by(user_id=user_id).all()
+    
+    # Optimized query with eager loading to prevent N+1 problem
+    enrollments = Enrollment.query.filter_by(user_id=user_id).options(joinedload(Enrollment.course)).all()
     
     results = []
     total_weighted_points = 0.0
