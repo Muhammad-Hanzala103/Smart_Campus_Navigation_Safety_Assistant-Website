@@ -1,8 +1,9 @@
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import SOSAlert, EmergencyContact, SafeZone, MapNode, Notification
-from app.utils import token_required
+from app.encryption import encryption_manager
+from app.models import SOSAlert, EmergencyContact, SafeZone, MapNode, Notification, University
+from app.utils import token_required, tenant_required
 import math
 
 emergency_bp = Blueprint('emergency', __name__)
@@ -11,13 +12,14 @@ emergency_bp = Blueprint('emergency', __name__)
 @emergency_bp.route('/sos', methods=['POST'])
 @token_required
 def create_sos(current_user):
-    """Create new SOS alert"""
+    """Create new SOS alert for the user's university"""
     data = request.get_json()
     
     sos = SOSAlert(
+        university_id=current_user.university_id,
         user_id=current_user.id,
         alert_type=data.get('alert_type'),
-        message=data.get('message'),
+        message=encryption_manager.encrypt(data.get('message')),
         latitude=data.get('latitude'),
         longitude=data.get('longitude'),
         status='active'
@@ -36,12 +38,17 @@ def create_sos(current_user):
 
 
 def _notify_security(sos):
-    """Create notifications for security users about SOS alert"""
+    """Create notifications for security users about SOS alert within the same university"""
     from app.models import User
-    security_users = User.query.filter(User.role.in_(['security', 'admin'])).all()
+    # Only notify security/admin of the SAME university
+    security_users = User.query.filter(
+        User.role.in_(['security', 'admin']),
+        User.university_id == sos.university_id
+    ).all()
     
     for user in security_users:
         notification = Notification(
+            university_id=sos.university_id,
             user_id=user.id,
             title=f'SOS Alert: {sos.alert_type}',
             message=sos.message or f'Emergency {sos.alert_type} alert triggered',
@@ -54,9 +61,10 @@ def _notify_security(sos):
 
 
 @emergency_bp.route('/contacts', methods=['GET'])
-def get_contacts():
-    """Get all active emergency contacts"""
-    contacts = EmergencyContact.query.filter_by(is_active=True).all()
+@tenant_required
+def get_contacts(uni):
+    """Get all active emergency contacts for a specific university"""
+    contacts = EmergencyContact.query.filter_by(university_id=uni.id, is_active=True).all()
     
     return jsonify({
         'contacts': [c.to_dict() for c in contacts]
@@ -64,13 +72,14 @@ def get_contacts():
 
 
 @emergency_bp.route('/evacuation-routes', methods=['GET'])
-def get_evacuation_routes():
-    """Get evacuation routes from current location"""
+@tenant_required
+def get_evacuation_routes(uni):
+    """Get evacuation routes for a specific university"""
     lat = request.args.get('lat', type=float)
     lng = request.args.get('lng', type=float)
     
-    # Find emergency exits
-    exits = MapNode.query.filter_by(is_emergency_exit=True).all()
+    # Find emergency exits for this university
+    exits = MapNode.query.filter_by(university_id=uni.id, is_emergency_exit=True).all()
     
     routes = []
     for exit_node in exits:

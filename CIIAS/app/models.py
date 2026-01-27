@@ -1,4 +1,5 @@
 from datetime import datetime
+from app.encryption import encryption_manager
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 
@@ -136,9 +137,50 @@ class Program(db.Model):
             'total_credits': self.total_credits
         }
 
+class University(db.Model):
+    __tablename__ = 'universities'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    slug = db.Column(db.String(50), unique=True, nullable=False, index=True) # e.g. 'kicsit'
+    domain = db.Column(db.String(100), unique=True) # e.g. 'kicsit.edu.pk'
+    api_key = db.Column(db.String(100), unique=True, nullable=False)
+    is_active = db.Column(db.Boolean, default=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'slug': self.slug,
+            'domain': self.domain,
+            'is_active': self.is_active
+        }
+
+class UniversityConfig(db.Model):
+    __tablename__ = 'university_configs'
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), primary_key=True)
+    primary_color = db.Column(db.String(20), default='#007BFF')
+    secondary_color = db.Column(db.String(20), default='#6C757D')
+    logo_url = db.Column(db.String(256))
+    enabled_modules = db.Column(db.JSON, default=lambda: ["map", "incidents", "emergency"])
+    map_lat = db.Column(db.Float)
+    map_lng = db.Column(db.Float)
+    
+    university = db.relationship('University', backref=db.backref('config', uselist=False))
+
+    def to_dict(self):
+        return {
+            'primary_color': self.primary_color,
+            'secondary_color': self.secondary_color,
+            'logo_url': self.logo_url,
+            'enabled_modules': self.enabled_modules,
+            'map_center': {'lat': self.map_lat, 'lng': self.map_lng}
+        }
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=True) # Nullable for platform broad admins
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False, index=True)
     password_hash = db.Column(db.String(256), nullable=False)
@@ -148,6 +190,8 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
     fcm_token = db.Column(db.String(256))  # For push notifications
+
+    university = db.relationship('University', backref='users')
     
     # Nexus 2.0 Hierarchy
     campus_id = db.Column(db.Integer, db.ForeignKey('campuses.id'), nullable=True)
@@ -223,6 +267,7 @@ class User(db.Model):
 class Incident(db.Model):
     __tablename__ = 'incidents'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     description = db.Column(db.Text, nullable=False)
     category = db.Column(db.String(50))  # security, fire, medical, accident, infrastructure
@@ -243,13 +288,14 @@ class Incident(db.Model):
     resolved_at = db.Column(db.DateTime)
 
     user = db.relationship('User', backref='incidents')
+    university = db.relationship('University', backref='incidents')
 
     def to_dict(self):
         return {
             'id': self.id,
             'user_id': self.user_id,
             'user': {'name': self.user.name} if self.user else None,
-            'description': self.description,
+            'description': encryption_manager.decrypt(self.description),
             'category': self.category,
             'severity': self.severity,
             'status': self.status,
@@ -290,6 +336,7 @@ class IncidentComment(db.Model):
 class SOSAlert(db.Model):
     __tablename__ = 'sos_alerts'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     alert_type = db.Column(db.String(50))  # medical, fire, security, accident
     message = db.Column(db.Text)
@@ -300,6 +347,7 @@ class SOSAlert(db.Model):
     resolved_at = db.Column(db.DateTime)
 
     user = db.relationship('User', backref='sos_alerts')
+    university = db.relationship('University', backref='sos_alerts')
 
     def to_dict(self):
         return {
@@ -307,7 +355,7 @@ class SOSAlert(db.Model):
             'user_id': self.user_id,
             'user': {'name': self.user.name} if self.user else None,
             'alert_type': self.alert_type,
-            'message': self.message,
+            'message': encryption_manager.decrypt(self.message),
             'latitude': self.latitude,
             'longitude': self.longitude,
             'status': self.status,
@@ -319,6 +367,7 @@ class SOSAlert(db.Model):
 class Notification(db.Model):
     __tablename__ = 'notifications'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     title = db.Column(db.String(200))
     message = db.Column(db.Text)
@@ -328,6 +377,7 @@ class Notification(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', backref='notifications')
+    university = db.relationship('University', backref='notifications')
 
     def to_dict(self):
         return {
@@ -345,6 +395,7 @@ class Notification(db.Model):
 class Room(db.Model):
     __tablename__ = 'rooms'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     building = db.Column(db.String(100))
     floor = db.Column(db.String(20))
@@ -355,6 +406,8 @@ class Room(db.Model):
     image_url = db.Column(db.String(256))
     is_available = db.Column(db.Boolean, default=True)
     node_id = db.Column(db.Integer, db.ForeignKey('map_nodes.id'))
+
+    university = db.relationship('University', backref='rooms')
 
     def to_dict(self):
         return {
@@ -374,6 +427,7 @@ class Room(db.Model):
 class Booking(db.Model):
     __tablename__ = 'bookings'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey('rooms.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
@@ -385,6 +439,7 @@ class Booking(db.Model):
 
     user = db.relationship('User', backref='bookings')
     room = db.relationship('Room', backref='bookings')
+    university = db.relationship('University', backref='bookings')
 
     def to_dict(self):
         return {
@@ -404,6 +459,7 @@ class Booking(db.Model):
 class MapNode(db.Model):
     __tablename__ = 'map_nodes'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     node_type = db.Column(db.String(50))  # building, room, exit, parking, emergency
     latitude = db.Column(db.Float)
@@ -416,6 +472,8 @@ class MapNode(db.Model):
     is_accessible = db.Column(db.Boolean, default=True)
     is_emergency_exit = db.Column(db.Boolean, default=False)
     altitude = db.Column(db.Float, default=0.0) # Added for AR Navigation
+
+    university = db.relationship('University', backref='map_nodes')
 
     def to_dict(self):
         return {
@@ -456,10 +514,13 @@ class MapEdge(db.Model):
 class EmergencyContact(db.Model):
     __tablename__ = 'emergency_contacts'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
     type = db.Column(db.String(50))  # security, medical, fire, police
     is_active = db.Column(db.Boolean, default=True)
+
+    university = db.relationship('University', backref='emergency_contacts')
 
     def to_dict(self):
         return {
@@ -474,11 +535,14 @@ class EmergencyContact(db.Model):
 class SafeZone(db.Model):
     __tablename__ = 'safe_zones'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
     capacity = db.Column(db.Integer)
     description = db.Column(db.Text)
+
+    university = db.relationship('University', backref='safe_zones')
 
     def to_dict(self):
         return {
@@ -641,6 +705,7 @@ class DateSheet(db.Model):
 class Shuttle(db.Model):
     __tablename__ = 'shuttles'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     plate_number = db.Column(db.String(20), unique=True)
     route_name = db.Column(db.String(50)) # "Blue Line"
     status = db.Column(db.String(20), default='Offline') # Active, Offline, Maintenance
@@ -656,6 +721,7 @@ class Shuttle(db.Model):
     model = db.Column(db.String(50))
     
     driver = db.relationship('User', backref='shuttle_assigned')
+    university = db.relationship('University', backref='shuttles')
 
     def to_dict(self):
         return {
@@ -675,12 +741,15 @@ class Shuttle(db.Model):
 class Book(db.Model):
     __tablename__ = 'books'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     isbn = db.Column(db.String(20), unique=True)
     title = db.Column(db.String(200), nullable=False)
     author = db.Column(db.String(100))
     category = db.Column(db.String(50))
     status = db.Column(db.String(20), default='Available') # Available, Issued
     cover_image_url = db.Column(db.String(256))
+
+    university = db.relationship('University', backref='books')
     
     def to_dict(self):
         return {
@@ -705,6 +774,7 @@ class Wallet(db.Model):
 class CafeteriaItem(db.Model):
     __tablename__ = 'cafeteria_items'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
     image_url = db.Column(db.String(256))
@@ -716,6 +786,7 @@ class CafeteriaItem(db.Model):
     cafeteria_name = db.Column(db.String(100), default='Main Cafe')
     
     campus = db.relationship('Campus', backref='cafeteria_items')
+    university = db.relationship('University', backref='cafeteria_items')
 
     def to_dict(self):
         return {
@@ -733,6 +804,7 @@ class CafeteriaItem(db.Model):
 class CafeteriaOrder(db.Model):
     __tablename__ = 'cafeteria_orders'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     items = db.Column(db.JSON, nullable=False) # List of {item_id, quantity, price}
     total_price = db.Column(db.Float, nullable=False)
@@ -740,6 +812,7 @@ class CafeteriaOrder(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', backref='cafeteria_orders')
+    university = db.relationship('University', backref='cafeteria_orders')
 
     def to_dict(self):
         return {
@@ -755,6 +828,7 @@ class CafeteriaOrder(db.Model):
 class FeeChallan(db.Model):
     __tablename__ = 'fee_challans'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     due_date = db.Column(db.Date, nullable=False)
@@ -764,6 +838,7 @@ class FeeChallan(db.Model):
     generated_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', backref='fee_challans')
+    university = db.relationship('University', backref='fee_challans')
 
     def to_dict(self):
         return {
@@ -780,6 +855,7 @@ class FeeChallan(db.Model):
 class ChatMessage(db.Model):
     __tablename__ = 'chat_messages'
     id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     sender_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     receiver_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     message = db.Column(db.Text, nullable=False)
@@ -788,13 +864,14 @@ class ChatMessage(db.Model):
 
     sender = db.relationship('User', foreign_keys=[sender_id], backref='sent_messages')
     receiver = db.relationship('User', foreign_keys=[receiver_id], backref='received_messages')
+    university = db.relationship('University', backref='chat_messages')
 
     def to_dict(self):
         return {
             'id': self.id,
             'sender_id': self.sender_id,
             'receiver_id': self.receiver_id,
-            'message': self.message,
+            'message': encryption_manager.decrypt(self.message),
             'timestamp': self.timestamp.isoformat() if self.timestamp else None,
             'is_read': self.is_read
         }

@@ -1,16 +1,18 @@
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import Book
-from app.utils import token_required
+from app.models import Book, University
+from app.utils import token_required, tenant_required
 
 library_bp = Blueprint('library', __name__)
 
 @library_bp.route('/books', methods=['GET'])
-def get_books():
+@tenant_required
+def get_books(uni):
+    """Get all books for a specific university"""
     query = request.args.get('q')
     category = request.args.get('category')
     
-    q = Book.query
+    q = Book.query.filter_by(university_id=uni.id)
     if query:
         search = f"%{query}%"
         q = q.filter((Book.title.like(search)) | (Book.author.like(search)))
@@ -30,9 +32,9 @@ def borrow_book(current_user):
     if not book_id:
         return jsonify({'error': 'Book ID required'}), 400
         
-    book = Book.query.get(book_id)
+    book = Book.query.filter_by(id=book_id, university_id=current_user.university_id).first()
     if not book:
-        return jsonify({'error': 'Book not found'}), 404
+        return jsonify({'error': 'Book not found or unauthorized'}), 404
         
     if book.status != 'Available':
         return jsonify({'error': 'Book is not available'}), 400

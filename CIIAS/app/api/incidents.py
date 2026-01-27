@@ -2,10 +2,11 @@ import os
 import uuid
 import base64
 from datetime import datetime
+from app.encryption import encryption_manager
 from flask import Blueprint, request, jsonify, current_app
 from app import db
-from app.models import Incident, IncidentComment
-from app.utils import token_required
+from app.models import Incident, IncidentComment, University
+from app.utils import token_required, tenant_required
 from app.ai_analyzer import analyzer
 from werkzeug.utils import secure_filename
 
@@ -18,9 +19,10 @@ def allowed_file(filename):
 
 
 @incident_bp.route('', methods=['GET'])
-def get_incidents():
-    """Get all incidents with optional filters"""
-    query = Incident.query
+@tenant_required
+def get_incidents(uni):
+    """Get all incidents for a specific university"""
+    query = Incident.query.filter_by(university_id=uni.id)
     
     status = request.args.get('status')
     if status:
@@ -94,6 +96,7 @@ def create_incident(current_user):
             image_url = f'/uploads/{filename}'
     
     incident = Incident(
+        university_id=current_user.university_id,
         user_id=current_user.id,
         description=description,
         category=category,
@@ -105,6 +108,8 @@ def create_incident(current_user):
         image_url=image_url,
         status='open'
     )
+    # Encrypt description before saving
+    incident.description = encryption_manager.encrypt(description)
     
     db.session.add(incident)
     db.session.commit()

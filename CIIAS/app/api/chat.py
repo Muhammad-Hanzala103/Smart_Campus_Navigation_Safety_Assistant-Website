@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import ChatMessage, User
+from app.models import ChatMessage, User, University
 from app.utils import token_required
 from datetime import datetime
+from app.encryption import encryption_manager
 from sqlalchemy import or_, and_
 
 chat_bp = Blueprint('chat', __name__)
@@ -60,9 +61,10 @@ def send_message(current_user):
         return jsonify({'error': 'User not found'}), 404
         
     msg = ChatMessage(
+        university_id=current_user.university_id,
         sender_id=current_user.id,
         receiver_id=receiver_id,
-        message=message_text
+        message=encryption_manager.encrypt(message_text)
     )
     
     db.session.add(msg)

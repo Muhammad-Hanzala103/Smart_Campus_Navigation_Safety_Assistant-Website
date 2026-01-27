@@ -1,15 +1,17 @@
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import Shuttle
+from app.models import Shuttle, University
+from app.utils import tenant_required
 from datetime import datetime
 
 transport_bp = Blueprint('transport', __name__)
 
 @transport_bp.route('/live', methods=['GET'])
-def get_live_shuttles():
-    """Get live location of all active shuttles"""
+@tenant_required
+def get_live_shuttles(uni):
+    """Get live location of all active shuttles for a specific university"""
     campus_id = request.args.get('campus_id')
-    query = Shuttle.query.filter_by(status='Active')
+    query = Shuttle.query.filter_by(university_id=uni.id, status='Active')
     if campus_id:
         query = query.filter_by(campus_id=campus_id)
         
@@ -17,10 +19,11 @@ def get_live_shuttles():
     return jsonify([s.to_dict() for s in shuttles]), 200
 
 @transport_bp.route('/shuttles', methods=['GET'])
-def get_all_shuttles():
-    """Get all shuttles with optional campus filtering and driver details"""
+@tenant_required
+def get_all_shuttles(uni):
+    """Get all shuttles for a specific university with optional campus filtering"""
     campus_id = request.args.get('campus_id')
-    query = Shuttle.query
+    query = Shuttle.query.filter_by(university_id=uni.id)
     if campus_id:
         query = query.filter_by(campus_id=campus_id)
         

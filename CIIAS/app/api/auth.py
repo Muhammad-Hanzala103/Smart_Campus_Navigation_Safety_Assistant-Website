@@ -13,22 +13,26 @@ reset_codes = {}
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    """Register a new user"""
+    """Register a new user associated with a specific university"""
     data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    university_id = data.get('university_id')
     
-    if not data.get('email') or not data.get('password'):
-        return jsonify({'success': False, 'message': 'Email and password required'}), 400
+    if not email or not password or not university_id:
+        return jsonify({'success': False, 'message': 'Email, password, and university_id are required'}), 400
     
-    if User.query.filter_by(email=data.get('email')).first():
+    if User.query.filter_by(email=email).first():
         return jsonify({'success': False, 'message': 'Email already registered'}), 400
     
     new_user = User(
         name=data.get('name', ''),
-        email=data.get('email'),
+        email=email,
+        university_id=university_id,
         role=data.get('role', 'student'),
         phone=data.get('phone')
     )
-    new_user.set_password(data.get('password'))
+    new_user.set_password(password)
     
     db.session.add(new_user)
     db.session.commit()

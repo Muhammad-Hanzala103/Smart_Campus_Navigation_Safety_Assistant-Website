@@ -68,6 +68,7 @@ def create_app(config_name='default', init_blueprints=True):
         from app.api.cafeteria import cafeteria_bp
         from app.api.chat import chat_bp
         from app.api.financial import financial_bp
+        from app.api.platform import platform_bp
         from app.api.data import data_bp
         from app.web.routes import web_bp
         
@@ -87,6 +88,7 @@ def create_app(config_name='default', init_blueprints=True):
         app.register_blueprint(cafeteria_bp, url_prefix='/api/cafeteria')
         app.register_blueprint(chat_bp, url_prefix='/api/chat')
         app.register_blueprint(financial_bp, url_prefix='/api/financial')
+        app.register_blueprint(platform_bp, url_prefix='/api/platform')
         app.register_blueprint(data_bp, url_prefix='/api/data')
         app.register_blueprint(web_bp)
 

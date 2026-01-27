@@ -1,18 +1,19 @@
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import CafeteriaItem, CafeteriaOrder, User
-from app.utils import token_required, ROLE_CAFETERIA, ROLE_ADMIN
+from app.models import CafeteriaItem, CafeteriaOrder, User, University
+from app.utils import token_required, ROLE_CAFETERIA, ROLE_ADMIN, tenant_required
 from datetime import datetime
 
 cafeteria_bp = Blueprint('cafeteria', __name__)
 
 @cafeteria_bp.route('/menu', methods=['GET'])
-def get_menu():
-    """Get all available cafeteria items (supports campus filtering)"""
+@tenant_required
+def get_menu(uni):
+    """Get all available cafeteria items for a specific university"""
     campus_id = request.args.get('campus_id')
     category = request.args.get('category')
     
-    query = CafeteriaItem.query.filter_by(is_available=True)
+    query = CafeteriaItem.query.filter_by(university_id=uni.id, is_available=True)
     
     if campus_id:
         query = query.filter_by(campus_id=campus_id)
@@ -76,6 +77,7 @@ def place_order(current_user):
         return jsonify({'error': 'No valid items found'}), 400
         
     order = CafeteriaOrder(
+        university_id=current_user.university_id,
         user_id=current_user.id,
         items=final_items,
         total_price=total_price,

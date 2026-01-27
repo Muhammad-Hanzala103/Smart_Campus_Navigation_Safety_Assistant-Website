@@ -24,6 +24,31 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
+def tenant_required(f):
+    """Ensure a valid University tenant is specified in headers"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        from app.models import University
+        tenant_slug = request.headers.get('X-University-Slug')
+        tenant_id = request.headers.get('X-University-ID')
+        api_key = request.headers.get('X-API-Key')
+        
+        uni = None
+        if tenant_id:
+            uni = University.query.get(tenant_id)
+        elif tenant_slug:
+            uni = University.query.filter_by(slug=tenant_slug).first()
+            
+        if not uni or not uni.is_active:
+            return jsonify({'message': 'University tenant not found or inactive'}), 404
+            
+        # Optional: Verify API Key for extra security
+        if api_key and uni.api_key != api_key:
+            return jsonify({'message': 'Invalid University API Key'}), 403
+            
+        return f(uni, *args, **kwargs)
+    return decorated
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):

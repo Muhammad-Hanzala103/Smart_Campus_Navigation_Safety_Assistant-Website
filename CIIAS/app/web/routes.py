@@ -236,7 +236,12 @@ def dashboard():
     }
     recent_incidents = Incident.query.order_by(Incident.created_at.desc()).limit(5).all()
     recent_activity = AuditLog.query.order_by(AuditLog.timestamp.desc()).limit(10).all()
-    return render_template('dashboard.html', stats=stats, recent_incidents=recent_incidents, activity=recent_activity)
+    return render_template('dashboard.html', 
+                          stats=stats, 
+                          recent_incidents=recent_incidents, 
+                          activity=recent_activity,
+                          campus_lat=session.get('campus_lat', 33.6518),
+                          campus_lng=session.get('campus_lng', 73.1566))
 
 # ============== SECURITY MODULE ==============
 @web_bp.route('/security')
@@ -259,7 +264,10 @@ from app.models import Course, Shuttle # Import new models
 def faculty_dashboard():
     courses = Course.query.all()
     # If using user-specific courses: courses = Course.query.filter_by(instructor_id=session['user_id']).all()
-    return render_template('faculty_dashboard.html', courses=courses)
+    return render_template('faculty_dashboard.html', 
+                          courses=courses,
+                          campus_lat=session.get('campus_lat', 33.6518),
+                          campus_lng=session.get('campus_lng', 73.1566))
 
 # ============== TRANSPORT MODULE ==============
 @web_bp.route('/transport')
@@ -275,7 +283,9 @@ def transport_dashboard():
     import json
     return render_template('transport_dashboard.html', 
                            shuttles=shuttles, 
-                           shuttles_json=json.dumps(shuttles_json))
+                           shuttles_json=json.dumps(shuttles_json),
+                           campus_lat=session.get('campus_lat', 33.6518),
+                           campus_lng=session.get('campus_lng', 73.1566))
 
 # ============== LIBRARY MODULE ==============
 from app.models import Book
@@ -284,7 +294,10 @@ from app.models import Book
 @role_required(ROLE_ADMIN, ROLE_LIBRARIAN, ROLE_STUDENT)
 def library_dashboard():
     books = Book.query.all()
-    return render_template('library_dashboard.html', books=books)
+    return render_template('library_dashboard.html', 
+                          books=books,
+                          campus_lat=session.get('campus_lat', 33.6518),
+                          campus_lng=session.get('campus_lng', 73.1566))
 
 # ============== INCIDENTS ==============
 

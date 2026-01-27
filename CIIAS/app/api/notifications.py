@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import Notification, User
+from app.models import Notification, User, University
 from app.utils import token_required
 
 notifications_bp = Blueprint('notifications', __name__)
@@ -9,9 +9,11 @@ notifications_bp = Blueprint('notifications', __name__)
 @notifications_bp.route('', methods=['GET'])
 @token_required
 def get_notifications(current_user):
-    """Get all notifications for current user"""
-    notifications = Notification.query.filter_by(user_id=current_user.id)\
-        .order_by(Notification.created_at.desc()).all()
+    """Get all notifications for current user and their university"""
+    notifications = Notification.query.filter_by(
+        user_id=current_user.id,
+        university_id=current_user.university_id
+    ).order_by(Notification.created_at.desc()).all()
     
     return jsonify([n.to_dict() for n in notifications]), 200
 

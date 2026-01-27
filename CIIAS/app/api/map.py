@@ -2,30 +2,36 @@ import math
 import heapq
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import MapNode, MapEdge, MapPOI, Campus
-from app.utils import token_required, has_permission, ROLE_ADMIN, ROLE_SECURITY
+from app.models import MapNode, MapEdge, MapPOI, Campus, University
+from app.utils import token_required, has_permission, ROLE_ADMIN, ROLE_SECURITY, tenant_required
 from flask import session
 
 map_bp = Blueprint('map', __name__)
 
 
 @map_bp.route('', methods=['GET'])
-def get_map():
-    """Get map data with nodes and image URL"""
-    nodes = MapNode.query.all()
-    edges = MapEdge.query.all()
+@tenant_required
+def get_map(uni):
+    """Get map data for a specific university"""
+    nodes = MapNode.query.filter_by(university_id=uni.id).all()
+    # For edges, we only want edges where at least one node belongs to this university
+    # (In a correct setup, both would belong to the same uni)
+    edges = MapEdge.query.join(MapNode, MapEdge.from_node_id == MapNode.id)\
+        .filter(MapNode.university_id == uni.id).all()
     
     return jsonify({
-        'map_image_url': '/static/img/campus_map.png',
+        'map_image_url': uni.config.logo_url if uni.config and uni.config.logo_url else '/static/img/campus_map.png',
         'nodes': [n.to_dict() for n in nodes],
-        'edges': [e.to_dict() for e in edges]
+        'edges': [e.to_dict() for e in edges],
+        'config': uni.config.to_dict() if uni.config else None
     }), 200
 
 
 @map_bp.route('/nodes', methods=['GET'])
-def get_nodes():
-    """Get all map nodes"""
-    nodes = MapNode.query.all()
+@tenant_required
+def get_nodes(uni):
+    """Get all map nodes for a specific university"""
+    nodes = MapNode.query.filter_by(university_id=uni.id).all()
     return jsonify([n.to_dict() for n in nodes]), 200
 
 
@@ -204,11 +210,13 @@ def _find_path(start_id, end_id):
 
 # Admin routes for node management
 @map_bp.route('/nodes', methods=['POST'])
-def create_node():
-    """Create a new map node"""
+@token_required
+def create_node(current_user):
+    """Create a new map node for the user's university"""
     data = request.get_json()
     
     node = MapNode(
+        university_id=current_user.university_id,
         name=data.get('name'),
         node_type=data.get('node_type'),
         latitude=data.get('latitude'),
