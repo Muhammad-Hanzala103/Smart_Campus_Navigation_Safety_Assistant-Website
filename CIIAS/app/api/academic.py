@@ -2,8 +2,10 @@ from flask import Blueprint, request, jsonify
 from app import db
 from app.models import (
     Course, Attendance, Grade, User, Enrollment, 
-    ExamSeat, Assignment, AssignmentSubmission, TeacherFeedback, DateSheet
+    ExamSeat, Assignment, AssignmentSubmission, TeacherFeedback, DateSheet,
+    GradingPolicy
 )
+from app.utils import tenant_required
 from datetime import datetime
 
 
@@ -13,8 +15,9 @@ academic_bp = Blueprint('academic', __name__)
 # ==================== COURSES ====================
 
 @academic_bp.route('/courses', methods=['GET'])
-def get_courses():
-    courses = Course.query.all()
+@tenant_required
+def get_courses(uni):
+    courses = Course.query.filter_by(university_id=uni.id).all()
     return jsonify([c.to_dict() for c in courses]), 200
 
 @academic_bp.route('/my_courses', methods=['GET'])
@@ -241,7 +244,27 @@ def get_datesheet():
             'id': d.id,
             'exam_type': d.exam_type,
             'semester': d.semester,
-            'file_url': d.file_url,
-            'created_at': d.created_at.isoformat()
         } for d in datesheets
     ]), 200
+
+# ==================== GRADING POLICIES (SaaS) ====================
+
+@academic_bp.route('/grading-policies', methods=['GET'])
+@tenant_required
+def get_grading_policies(uni):
+    policies = GradingPolicy.query.filter_by(university_id=uni.id).all()
+    return jsonify([p.to_dict() for p in policies]), 200
+
+@academic_bp.route('/grading-policies', methods=['POST'])
+@tenant_required
+def create_grading_policy(uni):
+    data = request.json
+    policy = GradingPolicy(
+        university_id=uni.id,
+        name=data.get('name'),
+        config=data.get('config'), # JSON string
+        is_active=True
+    )
+    db.session.add(policy)
+    db.session.commit()
+    return jsonify(policy.to_dict()), 201

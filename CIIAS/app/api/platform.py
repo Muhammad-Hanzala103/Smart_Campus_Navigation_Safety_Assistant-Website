@@ -3,6 +3,7 @@ from app import db
 from app.models import University, UniversityConfig, User
 from app.utils import token_required, tenant_required
 from app.services.importer import importer
+from app.audit import track_action
 import secrets
 import string
 import uuid
@@ -70,6 +71,7 @@ def get_university_config(slug):
 
 @platform_bp.route('/import/users', methods=['POST'])
 @tenant_required
+@track_action(action_name='bulk_import_users')
 def import_users(uni):
     """Bulk import users from CSV"""
     if 'file' not in request.files:
