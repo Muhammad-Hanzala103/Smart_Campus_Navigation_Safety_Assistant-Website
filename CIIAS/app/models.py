@@ -180,7 +180,8 @@ class UniversityConfig(db.Model):
 # Association table for Parent-Child relationship
 parent_child = db.Table('parent_child',
     db.Column('parent_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
-    db.Column('child_id', db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    db.Column('child_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+    extend_existing=True
 )
 
 class User(db.Model):
