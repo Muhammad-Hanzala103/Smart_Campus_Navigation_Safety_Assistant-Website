@@ -13,7 +13,44 @@ reset_codes = {}
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    """Register a new user associated with a specific university"""
+    """
+    Register a new user associated with a specific university.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - email
+            - password
+            - university_id
+          properties:
+            email:
+              type: string
+              example: student@university.edu
+            password:
+              type: string
+              example: password123
+            university_id:
+              type: integer
+              example: 1
+            name:
+              type: string
+            phone:
+              type: string
+            role:
+              type: string
+              default: student
+    responses:
+      201:
+        description: User registered successfully
+      400:
+        description: Missing fields or email already exists
+    """
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
@@ -45,7 +82,37 @@ def register():
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    """Login and get JWT token"""
+    """
+    Login and get JWT token.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+              example: student@university.edu
+            password:
+              type: string
+              example: password123
+    responses:
+      200:
+        description: Login successful
+        schema:
+          type: object
+          properties:
+            token:
+              type: string
+            user:
+              type: object
+      401:
+        description: Invalid credentials
+    """
     data = request.get_json()
     
     if not data.get('email') or not data.get('password'):

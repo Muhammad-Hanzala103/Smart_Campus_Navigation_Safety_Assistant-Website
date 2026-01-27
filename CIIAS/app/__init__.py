@@ -4,6 +4,7 @@ from app.services.cache import cache
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from config import config
+from flasgger import Swagger
 
 from flask_socketio import SocketIO
 from flask_compress import Compress
@@ -17,7 +18,9 @@ socketio = SocketIO()
 compress = Compress()
 limiter = Limiter(key_func=get_remote_address)
 oauth = OAuth()
+oauth = OAuth()
 mail = Mail()
+swagger = Swagger()
 
 def create_app(config_name='default', init_blueprints=True):
     app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -38,6 +41,7 @@ def create_app(config_name='default', init_blueprints=True):
     oauth.init_app(app)
     mail.init_app(app)
     cache.init_app(app)
+    swagger.init_app(app)
 
     # Register Google OAuth
     oauth.register(

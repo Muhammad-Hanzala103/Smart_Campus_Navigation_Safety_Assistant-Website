@@ -19,6 +19,26 @@ academic_bp = Blueprint('academic', __name__)
 @tenant_required
 @cache.cached(timeout=300, key_prefix=make_cache_key)
 def get_courses(uni):
+    """
+    Get all courses for the university.
+    ---
+    tags:
+      - Academic
+    responses:
+      200:
+        description: List of courses
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              code:
+                type: string
+              name:
+                type: string
+              credit_hours:
+                type: integer
+    """
     courses = Course.query.filter_by(university_id=uni.id).all()
     return jsonify([c.to_dict() for c in courses]), 200
 
@@ -51,6 +71,28 @@ def get_my_courses():
 @academic_bp.route('/results', methods=['GET'])
 @cache.cached(timeout=60, key_prefix=make_cache_key)
 def get_results():
+    """
+    Get academic results/grades for a student.
+    ---
+    tags:
+      - Academic
+    parameters:
+      - in: query
+        name: user_id
+        type: integer
+        required: false
+        description: ID of the student (defaults to 1 for demo)
+    responses:
+      200:
+        description: Student results and CGPA
+        schema:
+          type: object
+          properties:
+            cgpa:
+              type: number
+            results:
+              type: array
+    """
     user_id = request.args.get('user_id', 1)
     enrollments = Enrollment.query.filter_by(user_id=user_id).all()
     
