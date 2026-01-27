@@ -1,8 +1,11 @@
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import University, UniversityConfig
+from app.models import University, UniversityConfig, User
+from app.utils import token_required, tenant_required
+from app.services.importer import importer
 import secrets
 import string
+import uuid
 
 platform_bp = Blueprint('platform', __name__)
 
@@ -63,3 +66,20 @@ def get_university_config(slug):
         'name': uni.name,
         'config': uni.config.to_dict()
     }), 200
+
+
+@platform_bp.route('/import/users', methods=['POST'])
+@tenant_required
+def import_users(uni):
+    """Bulk import users from CSV"""
+    if 'file' not in request.files:
+        return jsonify({'message': 'No file part'}), 400
+        
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'message': 'No selected file'}), 400
+        
+    if file:
+        result = importer.import_users_from_csv(file, uni.id)
+        status = 200 if result['success'] else 400
+        return jsonify(result), status

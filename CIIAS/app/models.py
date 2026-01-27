@@ -918,3 +918,22 @@ class AuditLog(db.Model):
             'status': self.status,
             'timestamp': self.timestamp.isoformat()
         }
+
+
+class GradingPolicy(db.Model):
+    __tablename__ = 'grading_policies'
+    id = db.Column(db.Integer, primary_key=True)
+    university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
+    name = db.Column(db.String(50), nullable=False) # e.g. "Standard 4.0", "Relative Grading"
+    config = db.Column(db.Text) # JSON string: {"A": 85, "B": 70}
+    is_active = db.Column(db.Boolean, default=True)
+
+    university = db.relationship('University', backref='grading_policies')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'config': self.config,
+            'is_active': self.is_active
+        }
