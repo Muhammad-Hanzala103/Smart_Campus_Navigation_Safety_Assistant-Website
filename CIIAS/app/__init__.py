@@ -36,11 +36,9 @@ def create_app(config_name='default', init_blueprints=True):
     compress.init_app(app)
     limiter.init_app(app)
     oauth.init_app(app)
-    limiter.init_app(app)
-    oauth.init_app(app)
     mail.init_app(app)
-    cache.init_app(app)
     swagger.init_app(app)
+    cache.init_app(app)
 
     # Register Google OAuth
     oauth.register(

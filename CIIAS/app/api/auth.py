@@ -225,7 +225,29 @@ def logout(current_user):
 
 @auth_bp.route('/biometric-login', methods=['POST'])
 def biometric_login():
-    """Login using biometric signature/token from mobile"""
+    """
+    Login using biometric signature/token from mobile.
+    ---
+    tags:
+      - Authentication
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+            biometric_token:
+              type: string
+              description: Cryptographic signature from Android Keystore
+    responses:
+      200:
+        description: Login successful
+      400:
+        description: Validation error
+    """
     data = request.get_json()
     bio_token = data.get('biometric_token')
     email = data.get('email')

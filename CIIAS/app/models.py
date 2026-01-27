@@ -177,12 +177,16 @@ class UniversityConfig(db.Model):
             'map_center': {'lat': self.map_lat, 'lng': self.map_lng}
         }
 
-# Association table for Parent-Child relationship
-parent_child = db.Table('parent_child',
-    db.Column('parent_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
-    db.Column('child_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
-    extend_existing=True
-)
+# Association Model for Parent-Child relationship
+# Use conditional definition to prevent double-import crashes
+if 'student_parent_link' not in db.metadata.tables:
+    student_parent_link = db.Table('student_parent_link', db.metadata,
+        db.Column('parent_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+        db.Column('child_id', db.Integer, db.ForeignKey('users.id'), primary_key=True),
+        extend_existing=True
+    )
+else:
+    student_parent_link = db.metadata.tables['student_parent_link']
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -206,13 +210,13 @@ class User(db.Model):
     
     # Parent Portal Relationship
     children = db.relationship(
-        'User', 
-        secondary=parent_child,
-        primaryjoin=(parent_child.c.parent_id == id),
-        secondaryjoin=(parent_child.c.child_id == id),
-        backref=db.backref('parents', lazy='dynamic'),
-        lazy='dynamic'
-    )
+         'User', 
+         secondary=student_parent_link,
+         primaryjoin="student_parent_link.c.parent_id == User.id",
+         secondaryjoin="student_parent_link.c.child_id == User.id",
+         backref=db.backref('parents', lazy='dynamic'),
+         lazy='dynamic'
+     )
     
 
     
@@ -912,6 +916,7 @@ MapPOI.campus = db.relationship('Campus', backref='pois')
 
 class AuditLog(db.Model):
     __tablename__ = 'audit_logs'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
@@ -939,6 +944,7 @@ class AuditLog(db.Model):
 
 class GradingPolicy(db.Model):
     __tablename__ = 'grading_policies'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     name = db.Column(db.String(50), nullable=False) # e.g. "Standard 4.0", "Relative Grading"
@@ -958,6 +964,7 @@ class GradingPolicy(db.Model):
 
 class Webhook(db.Model):
     __tablename__ = 'webhooks'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=False)
     url = db.Column(db.String(256), nullable=False)
