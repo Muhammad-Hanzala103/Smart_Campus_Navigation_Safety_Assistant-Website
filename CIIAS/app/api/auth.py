@@ -1,7 +1,7 @@
 import random
 from flask import Blueprint, request, jsonify
 from app import db
-from app.models import User
+from app.models import User, University
 from app.utils import token_required
 import jwt
 import datetime
@@ -189,3 +189,40 @@ def biometric_login():
             'role': user.role
         }
     }), 200
+@auth_bp.route('/link-child', methods=['POST'])
+@token_required
+def link_child(current_user):
+    """Link a student to a parent account via email/CNIC or ID"""
+    if current_user.role != 'parent':
+        return jsonify({'message': 'Only parents can perform this action'}), 403
+        
+    data = request.json
+    child_email = data.get('child_email')
+    
+    if not child_email:
+        return jsonify({'message': 'Child email is required'}), 400
+        
+    child = User.query.filter_by(email=child_email, university_id=current_user.university_id).first()
+    
+    if not child:
+        return jsonify({'message': 'Student not found in this university'}), 404
+        
+    if child in current_user.children:
+        return jsonify({'message': 'Child already linked'}), 409
+        
+    current_user.children.append(child)
+    db.session.commit()
+    
+    return jsonify({
+        'message': 'Child linked successfully',
+        'child': {'id': child.id, 'name': child.name}
+    }), 200
+
+@auth_bp.route('/my-children', methods=['GET'])
+@token_required
+def get_my_children(current_user):
+    if current_user.role != 'parent':
+        return jsonify({'message': 'Unauthorized'}), 403
+        
+    children = [c.to_dict() for c in current_user.children]
+    return jsonify(children), 200
