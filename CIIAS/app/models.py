@@ -24,6 +24,7 @@ class Organization(db.Model):
 
 class Campus(db.Model):
     __tablename__ = 'campuses'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     org_id = db.Column(db.Integer, db.ForeignKey('organizations.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
@@ -72,6 +73,7 @@ class MapPOI(db.Model):
 
 class Department(db.Model):
     __tablename__ = 'departments'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     campus_id = db.Column(db.Integer, db.ForeignKey('campuses.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
@@ -139,6 +141,7 @@ class Program(db.Model):
 
 class University(db.Model):
     __tablename__ = 'universities'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(150), nullable=False)
     slug = db.Column(db.String(50), unique=True, nullable=False, index=True) # e.g. 'kicsit'
@@ -190,6 +193,7 @@ else:
 
 class User(db.Model):
     __tablename__ = 'users'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     university_id = db.Column(db.Integer, db.ForeignKey('universities.id'), nullable=True) # Nullable for platform broad admins
     name = db.Column(db.String(100), nullable=False)
@@ -575,23 +579,6 @@ class SafeZone(db.Model):
             'description': self.description
         }
 
-
-class AuditLog(db.Model):
-    __tablename__ = 'audit_logs'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
-    action = db.Column(db.String(64))
-    details = db.Column(db.Text)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
-
-    def to_dict(self):
-        return {
-            'id': self.id,
-            'user_id': self.user_id,
-            'action': self.action,
-            'details': self.details,
-            'timestamp': self.timestamp.isoformat() if self.timestamp else None
-        }
 
 
 # ==================== NEW MODULES FOR SMART CAMPUS ====================

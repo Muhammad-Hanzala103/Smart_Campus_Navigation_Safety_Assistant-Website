@@ -12,6 +12,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from authlib.integrations.flask_client import OAuth
 from flask_mail import Mail
+from flask_migrate import Migrate
 
 db = SQLAlchemy()
 socketio = SocketIO()
@@ -20,6 +21,7 @@ limiter = Limiter(key_func=get_remote_address)
 oauth = OAuth()
 mail = Mail()
 swagger = Swagger()
+migrate = Migrate()
 
 def create_app(config_name='default', init_blueprints=True):
     app = Flask(__name__, template_folder='templates', static_folder='static')
@@ -39,6 +41,7 @@ def create_app(config_name='default', init_blueprints=True):
     mail.init_app(app)
     swagger.init_app(app)
     cache.init_app(app)
+    migrate.init_app(app, db)
 
     # Register Google OAuth
     oauth.register(

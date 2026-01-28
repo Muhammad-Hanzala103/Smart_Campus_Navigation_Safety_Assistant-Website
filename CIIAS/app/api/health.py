@@ -26,7 +26,8 @@ def health_check():
     
     # Check Database
     try:
-        db.session.execute('SELECT 1')
+        from sqlalchemy import text
+        db.session.execute(text('SELECT 1'))
         status['database'] = 'connected'
     except Exception as e:
         status['database'] = f'error: {str(e)}'
