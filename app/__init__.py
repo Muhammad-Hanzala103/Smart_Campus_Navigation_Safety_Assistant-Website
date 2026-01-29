@@ -28,8 +28,11 @@ def create_app(config_name='default', init_blueprints=True):
     # Enable CORS for all routes (required for Android app)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
     
-    # Ensure upload folder exists
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    # Ensure upload folder exists (Handle read-only filesystems safely)
+    try:
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    except OSError:
+        pass
     
     db.init_app(app)
     # Vercel Serverless requires threading mode

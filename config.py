@@ -40,6 +40,7 @@ class ProductionConfig(Config):
         uri = uri.replace("postgres://", "postgresql://", 1)
     
     SQLALCHEMY_DATABASE_URI = uri
+    UPLOAD_FOLDER = '/tmp/uploads'
     SESSION_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
