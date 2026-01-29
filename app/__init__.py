@@ -34,7 +34,8 @@ def create_app(config_name='default', init_blueprints=True):
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
     db.init_app(app)
-    socketio.init_app(app, cors_allowed_origins="*")
+    # Vercel Serverless requires threading mode
+    socketio.init_app(app, cors_allowed_origins="*", async_mode='threading')
     compress.init_app(app)
     limiter.init_app(app)
     oauth.init_app(app)
