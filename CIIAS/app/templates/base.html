@@ -4,16 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="Campus Integrated Intelligence & Analytics System (CIIAS). The ultimate smart campus solution for safety, academics, and logistics.">
+    <meta name="description" content="Omniz: The ultimate smart campus solution for safety, academics, and logistics.">
     <meta name="keywords"
         content="Smart Campus, University Safety, Student Portal, Faculty Dashboard, Campus Logistics">
     <meta name="author" content="Muhammad Hanzala">
-    <meta property="og:title" content="CIIAS - Integrated Campus Intelligence">
+    <meta property="og:title" content="Omniz - Integrated Campus Intelligence">
     <meta property="og:description"
-        content="One Platform. Total Campus Intelligence. Safety, Academics, and Logistics unified.">
+        content="One Platform. Total Campus Intelligence. Omniz unifying Safety, Academics, and Logistics.">
     <meta property="og:image" content="{{ url_for('static', filename='img/og_image.jpg') }}">
-    <title>CIIAS - {% block title %}Dashboard{% endblock %}</title>
+    <title>Omniz - {% block title %}Dashboard{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -22,7 +21,7 @@
 
 <body>
     <nav class="top-navbar">
-        <div class="nav-brand">CIIAS</div>
+        <div class="nav-brand uppercase font-bold tracking-tighter">Omniz</div>
         <div class="nav-links">
             <a href="{{ url_for('web.dashboard') }}"
                 class="{{ 'active' if request.endpoint and request.endpoint == 'web.dashboard' }}">

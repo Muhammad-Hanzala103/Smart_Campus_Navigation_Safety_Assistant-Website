@@ -1,4 +1,4 @@
-# CIIAS - Campus Integrated Intelligence & Analytics System (Web Portal)
+# Omniz - Integrated Campus Intelligence & Analytics System
 
 ![Version](https://img.shields.io/badge/Version-2.0-blue?style=for-the-badge)
 ![Status](https://img.shields.io/badge/Status-Industrial_Grade-green?style=for-the-badge)
@@ -8,7 +8,7 @@
 
 ## 🚀 Overview
 
-**CIIAS** (Campus Integrated Intelligence & Analytics System) is an enterprise-grade web platform designed to unify **Academic Success**, **Campus Safety**, and **Daily Logistics** into a single, cohesive ecosystem. This web portal serves as the command center for the entire Smart Campus infrastructure.
+**Omniz** is an enterprise-grade web platform designed to unify **Academic Success**, **Campus Safety**, and **Daily Logistics** into a single, cohesive ecosystem. This web portal serves as the command center for the entire Smart Campus infrastructure.
 
 ## ✨ Key Features (Ultimate Edition)
 
