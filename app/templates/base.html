@@ -16,12 +16,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/ciias.css') }}">
 </head>
 
 <body>
     <nav class="top-navbar">
-        <div class="nav-brand uppercase font-bold tracking-tighter">Omniz</div>
+        <div class="nav-brand uppercase font-bold tracking-tighter flex items-center gap-2">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Omniz Logo"
+                style="height: 32px; width: 32px; border-radius: 8px;">
+            <span>Omniz</span>
+        </div>
         <div class="nav-links">
             <a href="{{ url_for('web.dashboard') }}"
                 class="{{ 'active' if request.endpoint and request.endpoint == 'web.dashboard' }}">
