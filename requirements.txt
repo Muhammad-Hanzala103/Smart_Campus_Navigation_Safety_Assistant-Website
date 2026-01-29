@@ -28,3 +28,4 @@ qrcode==8.0
 Flask-Caching==2.1.0
 flasgger==0.9.7.1
 cryptography==42.0.0
+python-dotenv==1.0.0
