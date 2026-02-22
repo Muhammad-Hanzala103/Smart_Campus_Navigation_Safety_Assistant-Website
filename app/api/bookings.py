@@ -10,7 +10,7 @@ booking_bp = Blueprint('bookings', __name__)
 @booking_bp.route('', methods=['GET'])
 def get_bookings():
     """Get all bookings"""
-    bookings = Booking.query.order_by(Booking.created_at.desc()).all()
+    bookings = Booking.query.options(db.joinedload(Booking.room)).order_by(Booking.created_at.desc()).all()
     return jsonify([b.to_dict() for b in bookings]), 200
 
 
