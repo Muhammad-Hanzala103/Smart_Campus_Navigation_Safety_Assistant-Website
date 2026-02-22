@@ -349,109 +349,102 @@
         </div>
     </main>
 
-    <!-- AI Chatbot Widget -->
-    <div x-data="chatWidget()" class="fixed bottom-6 right-6 z-[99999]">
+    <!-- AI Chatbot Widget (Pure Vanilla JS) -->
+    <div id="chatWidgetWrapper" class="fixed bottom-6 right-6 z-[99999]">
 
-        <!-- Chat Window (separate from toggle to prevent event bubbling) -->
-        <div x-show="isOpen" @click.stop x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 translate-y-10 scale-95"
-            x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-            x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-            x-transition:leave-end="opacity-0 translate-y-10 scale-95"
-            class="w-80 md:w-96 h-[500px] mb-4 glass rounded-2xl shadow-2xl border border-slate-600 flex flex-col overflow-hidden shadow-primary/20">
+        <!-- Chat Window: hidden by default via inline style -->
+        <div id="chatWindow" class="w-80 md:w-96 h-[500px] mb-4 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            style="display:none; background:rgba(15,23,42,0.96); backdrop-filter:blur(16px); border:1px solid #334155;">
 
             <!-- Header -->
-            <div class="p-4 bg-primary text-white flex justify-between items-center shadow-md">
+            <div class="p-4 flex justify-between items-center" style="background:#6366f1;">
                 <div class="flex items-center">
-                    <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mr-3">
-                        <i class="fas fa-robot"></i>
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3"
+                        style="background:rgba(255,255,255,0.2);">
+                        <i class="fas fa-robot text-white"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-sm">Campus Assistant</h3>
-                        <p class="text-[10px] text-indigo-200">Powered by Omniz AI</p>
+                        <h3 class="font-bold text-sm text-white">Campus Assistant</h3>
+                        <p class="text-white" style="font-size:10px; opacity:0.7;">Powered by Omniz AI</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button @click.stop="isOpen = false" title="Minimize"
-                        class="text-white/70 hover:text-white w-7 h-7 rounded flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
+                    <button id="chatMinimizeBtn" title="Minimize" type="button"
+                        class="text-white flex items-center justify-center rounded cursor-pointer"
+                        style="width:28px;height:28px;background:transparent;border:none;opacity:0.8;"
+                        onmouseover="this.style.background='rgba(255,255,255,0.25)'"
+                        onmouseout="this.style.background='transparent'">
                         <i class="fas fa-minus"></i>
                     </button>
-                    <button @click.stop="isOpen = false" title="Close"
-                        class="text-white/70 hover:text-white w-7 h-7 rounded flex items-center justify-center hover:bg-red-500/50 transition-colors cursor-pointer">
+                    <button id="chatCloseBtn" title="Close" type="button"
+                        class="text-white flex items-center justify-center rounded cursor-pointer"
+                        style="width:28px;height:28px;background:transparent;border:none;opacity:0.8;"
+                        onmouseover="this.style.background='rgba(239,68,68,0.6)'"
+                        onmouseout="this.style.background='transparent'">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
             </div>
 
             <!-- Messages Area -->
-            <div class="flex-1 overflow-y-auto p-4 space-y-4" id="chatMessages">
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4" style="background:rgba(15,23,42,0.85);">
                 <!-- Welcome Message -->
-                <div class="flex items-start">
-                    <div
-                        class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-2 flex-shrink-0 text-primary">
+                <div class="flex items-start mb-4">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2 flex-shrink-0"
+                        style="background:rgba(99,102,241,0.2); color:#6366f1;">
                         <i class="fas fa-robot text-xs"></i>
                     </div>
-                    <div
-                        class="bg-slate-800 p-3 rounded-2xl rounded-tl-none text-sm text-gray-200 shadow-sm border border-slate-700">
+                    <div class="p-3 rounded-2xl rounded-tl-none text-sm"
+                        style="background:#1e293b; color:#e2e8f0; border:1px solid #334155;">
                         Hello! I can help you with Bus Schedules, Exam Dates, or General Policies.
-                    </div>
-                </div>
-
-                <template x-for="msg in messages" :key="msg.id">
-                    <div class="flex items-start" :class="msg.isUser ? 'justify-end' : ''">
-                        <template x-if="!msg.isUser">
-                            <div
-                                class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-2 flex-shrink-0 text-primary">
-                                <i class="fas fa-robot text-xs"></i>
-                            </div>
-                        </template>
-
-                        <div class="p-3 rounded-2xl text-sm max-w-[80%] shadow-sm border border-slate-700"
-                            :class="msg.isUser ? 'bg-primary text-white rounded-tr-none' : 'bg-slate-800 text-gray-200 rounded-tl-none'">
-                            <p x-text="msg.text"></p>
-                            <template x-if="msg.source">
-                                <p class="text-[10px] opacity-50 mt-1 block text-right" x-text="'Src: ' + msg.source">
-                                </p>
-                            </template>
-                        </div>
-                    </div>
-                </template>
-
-                <!-- Typing Indicator -->
-                <div x-show="isTyping" class="flex items-start">
-                    <div
-                        class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-2 flex-shrink-0 text-primary">
-                        <i class="fas fa-robot text-xs"></i>
-                    </div>
-                    <div
-                        class="bg-slate-800 p-3 rounded-2xl rounded-tl-none text-sm text-gray-400 border border-slate-700">
-                        <span class="animate-pulse">...</span>
                     </div>
                 </div>
             </div>
 
+            <!-- Typing Indicator -->
+            <div id="chatTypingIndicator" class="flex items-start px-4 pb-2" style="display:none;">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center mr-2 flex-shrink-0"
+                    style="background:rgba(99,102,241,0.2); color:#6366f1;">
+                    <i class="fas fa-robot text-xs"></i>
+                </div>
+                <div class="p-3 rounded-2xl rounded-tl-none text-sm"
+                    style="background:#1e293b; color:#94a3b8; border:1px solid #334155;">
+                    <span>...</span>
+                </div>
+            </div>
+
             <!-- Input Area -->
-            <div class="p-4 bg-slate-900/50 border-t border-slate-700">
-                <form @submit.prevent="sendMessage" class="flex items-center gap-2">
-                    <input x-model="input" type="text" placeholder="Ask anything..."
-                        class="flex-1 bg-slate-800 border border-slate-700 rounded-full px-4 py-2 text-sm text-white focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all">
-                    <button type="submit" :disabled="!input.trim()"
-                        class="w-10 h-10 rounded-full bg-primary hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed text-white flex items-center justify-center transition-colors shadow-lg">
+            <div class="p-4 border-t" style="background:rgba(15,23,42,0.8); border-color:#334155;">
+                <form id="chatForm" class="flex items-center gap-2">
+                    <input id="chatInput" type="text" placeholder="Ask anything..."
+                        class="flex-1 rounded-full px-4 py-2 text-sm text-white"
+                        style="background:#1e293b; border:1px solid #334155; outline:none;"
+                        onfocus="this.style.borderColor='#6366f1'" onblur="this.style.borderColor='#334155'">
+                    <button type="submit" id="chatSendBtn" class="flex items-center justify-center text-white"
+                        style="width:40px;height:40px;border-radius:50%;background:#6366f1;border:none;cursor:pointer;"
+                        onmouseover="this.style.background='#4f46e5'" onmouseout="this.style.background='#6366f1'">
                         <i class="fas fa-paper-plane text-sm"></i>
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- Toggle Button (completely separate from chat window) -->
-        <div class="flex justify-end">
-            <button @click.stop="isOpen = !isOpen"
-                class="w-14 h-14 rounded-full bg-primary hover:bg-indigo-600 text-white shadow-lg flex items-center justify-center transition-all transform hover:scale-110 active:scale-95 group shadow-primary/40">
-                <i class="fas" :class="isOpen ? 'fa-times' : 'fa-comment-dots'" class="text-2xl"></i>
+        <!-- Toggle Button -->
+        <div style="display:flex; justify-content:flex-end;">
+            <button id="chatToggleBtn" type="button" class="flex items-center justify-center text-white"
+                style="width:56px;height:56px;border-radius:50%;background:#6366f1;border:none;cursor:pointer;box-shadow:0 8px 25px rgba(99,102,241,0.5);transition:transform 0.2s,background 0.2s;"
+                onmouseover="this.style.background='#4f46e5';this.style.transform='scale(1.1)'"
+                onmouseout="this.style.background='#6366f1';this.style.transform='scale(1)'">
+                <i id="chatToggleIcon" class="fas fa-comment-dots" style="font-size:22px;"></i>
             </button>
         </div>
     </div>
+
+
+
+
+
+
 
 
     <!-- Global Socket Scripts -->
@@ -493,73 +486,99 @@
         });
     </script>
     <script>
-        function chatWidget() {
-            return {
-                isOpen: false,
-                input: '',
-                isTyping: false,
-                messages: [],
+        // ========== VANILLA JS CHATBOT WIDGET ==========
+        document.addEventListener('DOMContentLoaded', function () {
+            const chatWindow = document.getElementById('chatWindow');
+            const chatToggleBtn = document.getElementById('chatToggleBtn');
+            const chatToggleIcon = document.getElementById('chatToggleIcon');
+            const chatCloseBtn = document.getElementById('chatCloseBtn');
+            const chatMinimizeBtn = document.getElementById('chatMinimizeBtn');
+            const chatForm = document.getElementById('chatForm');
+            const chatInput = document.getElementById('chatInput');
+            const chatMessages = document.getElementById('chatMessages');
+            const chatTyping = document.getElementById('chatTypingIndicator');
 
-                async sendMessage() {
-                    const text = this.input.trim();
-                    if (!text) return;
+            if (!chatToggleBtn) return; // Guard if elements not found
 
-                    // Add User Message
-                    this.messages.push({
-                        id: Date.now(),
-                        text: text,
-                        isUser: true
-                    });
-                    this.input = '';
-                    this.scrollToBottom();
-
-                    this.isTyping = true;
-
-                    try {
-                        const response = await fetch('/api/engagement/chat/ask', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ query: text })
-                        });
-                        const data = await response.json();
-
-                        this.isTyping = false;
-
-                        // Add Bot Response
-                        this.messages.push({
-                            id: Date.now() + 1,
-                            text: data.response || "I am here to help.",
-                            source: data.source,
-                            isUser: false
-                        });
-                        this.scrollToBottom();
-
-                    } catch (error) {
-                        console.error('Chat error:', error);
-                        this.isTyping = false;
-                        this.messages.push({
-                            id: Date.now() + 1,
-                            text: "Sorry, I'm having trouble connecting to the brain.",
-                            isUser: false
-                        });
-                        this.scrollToBottom();
-                    }
-                },
-
-                scrollToBottom() {
-                    const container = document.getElementById('chatMessages');
-                    if (container) {
-                        setTimeout(() => {
-                            container.scrollTop = container.scrollHeight;
-                        }, 50);
-                    }
-                },
-
-                closeChat() {
-                    this.isOpen = false;
-                }
+            function openChat() {
+                chatWindow.style.display = 'flex';
+                chatToggleIcon.className = 'fas fa-times';
+                chatInput.focus();
             }
-        }
+
+            function closeChat() {
+                chatWindow.style.display = 'none';
+                chatToggleIcon.className = 'fas fa-comment-dots';
+            }
+
+            chatToggleBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (chatWindow.style.display === 'none' || chatWindow.style.display === '') {
+                    openChat();
+                } else {
+                    closeChat();
+                }
+            });
+
+            chatCloseBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                closeChat();
+            });
+
+            chatMinimizeBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                closeChat();
+            });
+
+            function addMessage(text, isUser, source) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'flex items-start mb-4' + (isUser ? ' justify-end' : '');
+
+                const bubble = document.createElement('div');
+                bubble.className = 'p-3 rounded-2xl text-sm max-w-xs';
+                bubble.style.cssText = isUser
+                    ? 'background:#6366f1; color:white; border-radius:1rem 1rem 0 1rem;'
+                    : 'background:#1e293b; color:#e2e8f0; border:1px solid #334155; border-radius:1rem 1rem 1rem 0;';
+                bubble.textContent = text;
+
+                if (!isUser) {
+                    const icon = document.createElement('div');
+                    icon.className = 'w-8 h-8 rounded-full flex items-center justify-center mr-2 flex-shrink-0';
+                    icon.style.cssText = 'background:rgba(99,102,241,0.2); color:#6366f1; min-width:32px;';
+                    icon.innerHTML = '<i class="fas fa-robot text-xs"></i>';
+                    wrapper.appendChild(icon);
+                }
+
+                wrapper.appendChild(bubble);
+                chatMessages.appendChild(wrapper);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            chatForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const text = chatInput.value.trim();
+                if (!text) return;
+
+                addMessage(text, true);
+                chatInput.value = '';
+                chatTyping.style.display = 'flex';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                try {
+                    const resp = await fetch('/api/engagement/chat/ask', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ query: text })
+                    });
+                    const data = await resp.json();
+                    chatTyping.style.display = 'none';
+                    addMessage(data.response || "I am here to help.", false, data.source);
+                } catch (err) {
+                    chatTyping.style.display = 'none';
+                    addMessage("Sorry, I'm having trouble connecting right now.", false);
+                }
+            });
+        });
     </script>
     {% block scripts %}{% endblock %}
 </body>
