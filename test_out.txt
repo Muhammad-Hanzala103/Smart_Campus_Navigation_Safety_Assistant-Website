@@ -1,0 +1,7 @@
+============================= test session starts =============================
+platform win32 -- Python 3.13.12, pytest-7.4.3, pluggy-1.6.0
+rootdir: C:\New folder\Projects\SSNS
+collected 11 items
+
+tests\test_auth.py ...                                                   [ 27%]
+tests\test_routes.py .....F.
