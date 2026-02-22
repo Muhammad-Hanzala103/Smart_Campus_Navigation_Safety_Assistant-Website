@@ -7,11 +7,12 @@ cache = Cache(config={'CACHE_TYPE': 'SimpleCache', 'CACHE_DEFAULT_TIMEOUT': 300}
 
 def make_cache_key(*args, **kwargs):
     """
-    Generate a dynamic cache key that includes the university context.
-    This ensures that one university doesn't see another's cached data.
+    Generate a dynamic cache key that includes the university context and user session.
+    This ensures that one user doesn't see another's cached data.
     """
     path = request.path
     args_str = str(sorted(request.args.items()))
+    from flask import session
     
     # Include university ID in the key if available (from tenant_required)
     uni_prefix = "global"
@@ -19,5 +20,7 @@ def make_cache_key(*args, **kwargs):
         uni_prefix = f"uni_{g.current_tenant.id}"
     elif hasattr(g, 'current_user') and g.current_user and g.current_user.university_id:
         uni_prefix = f"uni_{g.current_user.university_id}"
+    elif session.get('user_id'):
+        uni_prefix = f"user_{session['user_id']}"
         
     return f"{uni_prefix}:{path}:{args_str}"
