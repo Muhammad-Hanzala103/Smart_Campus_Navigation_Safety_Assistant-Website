@@ -48,7 +48,8 @@ def get_my_incidents(current_user):
 
 
 @incident_bp.route('/<int:id>', methods=['GET'])
-def get_incident_detail(id):
+@token_required
+def get_incident_detail(current_user, id):
     """Get single incident with comments"""
     incident = Incident.query.options(db.joinedload(Incident.user)).get_or_404(id)
     
@@ -167,7 +168,8 @@ def add_comment(current_user, id):
 
 
 @incident_bp.route('/analyze', methods=['POST'])
-def analyze_incident():
+@token_required
+def analyze_incident(current_user):
     """Analyze incident image with AI"""
     image_bytes = None
     
@@ -197,7 +199,8 @@ def analyze_incident():
 
 
 @incident_bp.route('/analyze/image', methods=['POST'])
-def analyze_image():
+@token_required
+def analyze_image(current_user):
     """Analyze uploaded image file"""
     if 'image' not in request.files:
         return jsonify({'message': 'No image file provided'}), 400
