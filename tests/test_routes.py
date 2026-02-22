@@ -47,7 +47,7 @@ def test_admin_access_allowed(client, app):
     from app.models import User, University
     from app import db
     with app.app_context():
-        uni = University(name="Test", slug="test", domain="t.com")
+        uni = University(name="Test", slug="test", domain="t.com", api_key="secret-key")
         db.session.add(uni)
         db.session.commit()
         admin = User(name="Test Admin", email="admin2@test.com", role="admin", university_id=uni.id)
