@@ -4,4 +4,256 @@ rootdir: C:\New folder\Projects\SSNS
 collected 11 items
 
 tests\test_auth.py ...                                                   [ 27%]
-tests\test_routes.py .......
+tests\test_routes.py .......F                                            [100%]
+
+================================== FAILURES ===================================
+__________________________ test_admin_access_allowed __________________________
+
+self = <sqlalchemy.engine.base.Connection object at 0x0000025B20CB5790>
+dialect = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x0000025B22144E10>
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x0000025B225062D0>
+statement = <sqlalchemy.dialects.sqlite.base.SQLiteCompiler object at 0x0000025B225F45A0>
+parameters = [('Test', 'test', 't.com', None, 1, '2026-02-22 15:23:06.459025')]
+
+    def _exec_single_context(
+        self,
+        dialect: Dialect,
+        context: ExecutionContext,
+        statement: Union[str, Compiled],
+        parameters: Optional[_AnyMultiExecuteParams],
+    ) -> CursorResult[Any]:
+        """continue the _execute_context() method for a single DBAPI
+        cursor.execute() or cursor.executemany() call.
+    
+        """
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:
+            generic_setinputsizes = context._prepare_set_input_sizes()
+    
+            if generic_setinputsizes:
+                try:
+                    dialect.do_set_input_sizes(
+                        context.cursor, generic_setinputsizes, context
+                    )
+                except BaseException as e:
+                    self._handle_dbapi_exception(
+                        e, str(statement), parameters, None, context
+                    )
+    
+        cursor, str_statement, parameters = (
+            context.cursor,
+            context.statement,
+            context.parameters,
+        )
+    
+        effective_parameters: Optional[_AnyExecuteParams]
+    
+        if not context.executemany:
+            effective_parameters = parameters[0]
+        else:
+            effective_parameters = parameters
+    
+        if self._has_events or self.engine._has_events:
+            for fn in self.dispatch.before_cursor_execute:
+                str_statement, effective_parameters = fn(
+                    self,
+                    cursor,
+                    str_statement,
+                    effective_parameters,
+                    context,
+                    context.executemany,
+                )
+    
+        if self._echo:
+            self._log_info(str_statement)
+    
+            stats = context._get_cache_stats()
+    
+            if not self.engine.hide_parameters:
+                self._log_info(
+                    "[%s] %r",
+                    stats,
+                    sql_util._repr_params(
+                        effective_parameters,
+                        batches=10,
+                        ismulti=context.executemany,
+                    ),
+                )
+            else:
+                self._log_info(
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",
+                    stats,
+                )
+    
+        evt_handled: bool = False
+        try:
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:
+                effective_parameters = cast(
+                    "_CoreMultiExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_executemany:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_executemany(
+                        cursor,
+                        str_statement,
+                        effective_parameters,
+                        context,
+                    )
+            elif not effective_parameters and context.no_parameters:
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute_no_params:
+                        if fn(cursor, str_statement, context):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_execute_no_params(
+                        cursor, str_statement, context
+                    )
+            else:
+                effective_parameters = cast(
+                    "_CoreSingleExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+>                   self.dialect.do_execute(
+                        cursor, str_statement, effective_parameters, context
+                    )
+
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1967: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x0000025B22144E10>
+cursor = <sqlite3.Cursor object at 0x0000025B22183F40>
+statement = 'INSERT INTO universities (name, slug, domain, api_key, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+parameters = ('Test', 'test', 't.com', None, 1, '2026-02-22 15:23:06.459025')
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x0000025B225062D0>
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+>       cursor.execute(statement, parameters)
+E       sqlite3.IntegrityError: NOT NULL constraint failed: universities.api_key
+
+.venv\Lib\site-packages\sqlalchemy\engine\default.py:952: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+client = <FlaskClient <Flask 'app'>>, app = <Flask 'app'>
+
+    def test_admin_access_allowed(client, app):
+        """Test if a logged in admin user can access the dashboard"""
+        # Create admin logic inline to avoid DetachedInstanceError from fixture
+        from app.models import User, University
+        from app import db
+        with app.app_context():
+            uni = University(name="Test", slug="test", domain="t.com")
+            db.session.add(uni)
+>           db.session.commit()
+
+tests\test_routes.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+.venv\Lib\site-packages\sqlalchemy\orm\scoping.py:597: in commit
+    return self._proxied.commit()
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:2030: in commit
+    trans.commit(_to_root=True)
+<string>:2: in commit
+    ???
+.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py:137: in _go
+    ret_value = fn(self, *arg, **kw)
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:1311: in commit
+    self._prepare_impl()
+<string>:2: in _prepare_impl
+    ???
+.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py:137: in _go
+    ret_value = fn(self, *arg, **kw)
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:1286: in _prepare_impl
+    self.session.flush()
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:4331: in flush
+    self._flush(objects)
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:4466: in _flush
+    with util.safe_reraise():
+.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:224: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:4427: in _flush
+    flush_context.execute()
+.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py:466: in execute
+    rec.execute(self)
+.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py:642: in execute
+    util.preloaded.orm_persistence.save_obj(
+.venv\Lib\site-packages\sqlalchemy\orm\persistence.py:93: in save_obj
+    _emit_insert_statements(
+.venv\Lib\site-packages\sqlalchemy\orm\persistence.py:1233: in _emit_insert_statements
+    result = connection.execute(
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1419: in execute
+    return meth(
+.venv\Lib\site-packages\sqlalchemy\sql\elements.py:527: in _execute_on_connection
+    return connection._execute_clauseelement(
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1641: in _execute_clauseelement
+    ret = self._execute_context(
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1846: in _execute_context
+    return self._exec_single_context(
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1986: in _exec_single_context
+    self._handle_dbapi_exception(
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:2363: in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1967: in _exec_single_context
+    self.dialect.do_execute(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <sqlalchemy.dialects.sqlite.pysqlite.SQLiteDialect_pysqlite object at 0x0000025B22144E10>
+cursor = <sqlite3.Cursor object at 0x0000025B22183F40>
+statement = 'INSERT INTO universities (name, slug, domain, api_key, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?)'
+parameters = ('Test', 'test', 't.com', None, 1, '2026-02-22 15:23:06.459025')
+context = <sqlalchemy.dialects.sqlite.base.SQLiteExecutionContext object at 0x0000025B225062D0>
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+>       cursor.execute(statement, parameters)
+E       sqlalchemy.exc.IntegrityError: (sqlite3.IntegrityError) NOT NULL constraint failed: universities.api_key
+E       [SQL: INSERT INTO universities (name, slug, domain, api_key, is_active, created_at) VALUES (?, ?, ?, ?, ?, ?)]
+E       [parameters: ('Test', 'test', 't.com', None, 1, '2026-02-22 15:23:06.459025')]
+E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+.venv\Lib\site-packages\sqlalchemy\engine\default.py:952: IntegrityError
+============================== warnings summary ===============================
+app\models.py:899
+  C:\New folder\Projects\SSNS\app\models.py:899: SADeprecationWarning: User-placed attribute CafeteriaItem.campus on Mapper[CafeteriaItem(cafeteria_items)] is replacing an existing ORM-mapped attribute.  Behavior is not fully defined in this case.  This use is deprecated and will raise an error in a future release
+    CafeteriaItem.campus = db.relationship('Campus', backref='cafeteria_items')
+
+tests/test_auth.py: 3 warnings
+tests/test_routes.py: 8 warnings
+  C:\New folder\Projects\SSNS\.venv\Lib\site-packages\flask_limiter\_extension.py:364: UserWarning: Using the in-memory storage for tracking rate limits as no storage was explicitly specified. This is not recommended for production use. See: https://flask-limiter.readthedocs.io#configuring-a-storage-backend for documentation about configuring the storage backend.
+    warnings.warn(
+
+tests/test_auth.py: 3 warnings
+tests/test_routes.py: 8 warnings
+  C:\New folder\Projects\SSNS\.venv\Lib\site-packages\flask_sqlalchemy\extension.py:881: SAWarning: Can't sort tables for DROP; an unresolvable foreign key dependency exists between tables: departments, users; and backend does not support ALTER.  To restore at least a partial sort, apply use_alter=True to ForeignKey and ForeignKeyConstraint objects involved in the cycle to mark these as known cycles that will be ignored.
+    getattr(metadata, op_name)(bind=engine)
+
+tests/test_auth.py::test_register_login
+tests/test_routes.py::test_admin_access_allowed
+  C:\New folder\Projects\SSNS\.venv\Lib\site-packages\sqlalchemy\sql\schema.py:3624: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return util.wrap_callable(lambda ctx: fn(), fn)  # type: ignore
+
+tests/test_auth.py::test_register_login
+  C:\New folder\Projects\SSNS\app\api\auth.py:130: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=Config.JWT_EXPIRATION_HOURS)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/test_routes.py::test_admin_access_allowed - sqlalchemy.exc.Integ...
+================== 1 failed, 10 passed, 26 warnings in 7.87s ==================
