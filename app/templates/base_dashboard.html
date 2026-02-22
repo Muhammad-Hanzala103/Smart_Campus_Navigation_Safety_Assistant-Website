@@ -145,84 +145,6 @@
             }
         }
     </style>
-    <script>
-        function chatWidget() {
-            console.log("Chatbot Initializing...");
-            return {
-                isOpen: false,
-                input: '',
-                isTyping: false,
-                messages: [],
-
-                init() {
-                    console.log("Chatbot component initialized.");
-                },
-
-                async sendMessage() {
-                    const text = this.input.trim();
-                    if (!text) return;
-
-                    // Add User Message
-                    this.messages.push({
-                        id: Date.now(),
-                        text: text,
-                        isUser: true
-                    });
-                    this.input = '';
-                    this.scrollToBottom();
-
-                    this.isTyping = true;
-
-                    try {
-                        const response = await fetch('/api/engagement/chat/ask', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ query: text })
-                        });
-
-                        if (!response.ok) throw new Error('Network response was not ok');
-
-                        const data = await response.json();
-
-                        this.isTyping = false;
-
-                        // Add Bot Response
-                        this.messages.push({
-                            id: Date.now() + 1,
-                            text: data.response || "I'm sorry, I couldn't understand that.",
-                            source: data.source,
-                            isUser: false
-                        });
-                        this.scrollToBottom();
-
-                    } catch (error) {
-                        console.error('Chat error:', error);
-                        this.isTyping = false;
-                        this.messages.push({
-                            id: Date.now() + 1,
-                            text: "Sorry, I'm having trouble connecting to the brain. Please try again later.",
-                            isUser: false
-                        });
-                        this.scrollToBottom();
-                    }
-                },
-
-                scrollToBottom() {
-                    const container = document.getElementById('chatMessages');
-                    if (container) {
-                        setTimeout(() => {
-                            container.scrollTop = container.scrollHeight;
-                        }, 50);
-                    }
-                },
-
-                closeChat() {
-                    console.log("Closing chatbot...");
-                    this.isOpen = false;
-                }
-            }
-        }
-    </script>
 </head>
 
 <body class="bg-dark text-gray-100 font-sans antialiased h-screen overflow-hidden flex relative"
@@ -438,7 +360,6 @@
             x-transition:leave="transition ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
             x-transition:leave-end="opacity-0 translate-y-10 scale-95"
-            @click.window="if(isOpen && $event.target.closest && !$event.target.closest('[x-data]')) isOpen = false"
             class="w-80 md:w-96 h-[500px] glass rounded-2xl shadow-2xl border border-slate-600 flex flex-col overflow-hidden shadow-primary/20">
 
             <!-- Header -->
