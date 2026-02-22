@@ -22,7 +22,7 @@ def allowed_file(filename):
 @tenant_required
 def get_incidents(uni):
     """Get all incidents for a specific university"""
-    query = Incident.query.filter_by(university_id=uni.id)
+    query = Incident.query.options(db.joinedload(Incident.user)).filter_by(university_id=uni.id)
     
     status = request.args.get('status')
     if status:
@@ -41,7 +41,7 @@ def get_incidents(uni):
 @token_required
 def get_my_incidents(current_user):
     """Get incidents created by current user"""
-    incidents = Incident.query.filter_by(user_id=current_user.id)\
+    incidents = Incident.query.options(db.joinedload(Incident.user)).filter_by(user_id=current_user.id)\
         .order_by(Incident.created_at.desc()).all()
     
     return jsonify([i.to_dict() for i in incidents]), 200
@@ -50,7 +50,7 @@ def get_my_incidents(current_user):
 @incident_bp.route('/<int:id>', methods=['GET'])
 def get_incident_detail(id):
     """Get single incident with comments"""
-    incident = Incident.query.get_or_404(id)
+    incident = Incident.query.options(db.joinedload(Incident.user)).get_or_404(id)
     
     result = incident.to_dict()
     result['comments'] = [c.to_dict() for c in incident.comments]
