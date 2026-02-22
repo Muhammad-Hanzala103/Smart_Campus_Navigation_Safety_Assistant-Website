@@ -234,7 +234,7 @@ def dashboard():
         'total_reports': Incident.query.count(),
         'total_users': User.query.count()
     }
-    recent_incidents = Incident.query.order_by(Incident.created_at.desc()).limit(5).all()
+    recent_incidents = Incident.query.options(db.joinedload(Incident.user)).order_by(Incident.created_at.desc()).limit(5).all()
     recent_activity = AuditLog.query.order_by(AuditLog.timestamp.desc()).limit(10).all()
     return render_template('dashboard.html', 
                           stats=stats, 
@@ -317,7 +317,7 @@ def incidents():
     if search:
         query = query.filter(Incident.description.ilike(f'%{search}%'))
     
-    all_incidents = query.order_by(Incident.created_at.desc()).all()
+    all_incidents = query.options(db.joinedload(Incident.user)).order_by(Incident.created_at.desc()).all()
     return render_template('incidents.html', incidents=all_incidents)
 
 @web_bp.route('/incidents/<int:id>')
@@ -357,7 +357,7 @@ def system_status():
 @web_bp.route('/users')
 @role_required(ROLE_ADMIN, ROLE_REGISTRAR, ROLE_HR)
 def users():
-    all_users = User.query.order_by(User.created_at.desc()).all()
+    all_users = User.query.options(db.joinedload(User.campus), db.joinedload(User.department)).order_by(User.created_at.desc()).all()
     return render_template('users.html', users=all_users)
 
 @web_bp.route('/users/<int:id>/role', methods=['POST'])
