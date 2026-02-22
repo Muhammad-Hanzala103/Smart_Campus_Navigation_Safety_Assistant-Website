@@ -59,13 +59,12 @@
 <script>
     function mapAdmin() {
         return {
-            isAdmin: {{ 'true' if has_permission('admin') else 'false' }
-    },
-    campusId: { { session.get('campus_id', 0) } },
+            isAdmin: {{ 'true' if has_permission('admin') else 'false' }},
+            campusId: {{ session.get('campus_id', 0) }},
 
     init() {
         // Initialize Map using Campus Coordinates
-        const map = L.map('securityMap').setView([{{ campus_lat }}, { { campus_lng } }], 18);
+        const map = L.map('securityMap').setView([{{ campus_lat }}, {{ campus_lng }}], 18);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap &copy; CARTO'
     }).addTo(map);
@@ -105,7 +104,7 @@
                             </div>
                         </div>
                     `;
-                    marker{ { poi.id } }.bindPopup(navLinks);
+                    marker{{ poi.id }}.bindPopup(navLinks);
     {% endfor %}
 
     // Admin: Add POI on Click
