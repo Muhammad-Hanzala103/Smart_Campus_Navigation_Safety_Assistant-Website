@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, session, flash, jsonify
 from app.models import User, Incident, Booking, AuditLog, MapNode, Department, Campus, MapPOI, Course, Shuttle, Book
 from app import db, oauth
+from app.services.cache import cache, make_cache_key
 from app.utils import (
     login_required, role_required, has_permission,
     ROLE_ADMIN, ROLE_SECURITY, ROLE_STAFF, ROLE_HOD, ROLE_TEACHER,
@@ -227,6 +228,7 @@ def reset_password_new():
 # ============== DASHBOARD ==============
 @web_bp.route('/dashboard')
 @login_required
+@cache.cached(timeout=60, key_prefix=make_cache_key)
 def dashboard():
     stats = {
         'high_risk': Incident.query.filter_by(ai_severity='HIGH').count(),
@@ -261,6 +263,7 @@ from app.models import Course, Shuttle # Import new models
 @web_bp.route('/faculty')
 @login_required
 @role_required(ROLE_ADMIN, ROLE_HOD, ROLE_TEACHER)
+@cache.cached(timeout=60, key_prefix=make_cache_key)
 def faculty_dashboard():
     courses = Course.query.all()
     # If using user-specific courses: courses = Course.query.filter_by(instructor_id=session['user_id']).all()
@@ -273,6 +276,7 @@ def faculty_dashboard():
 @web_bp.route('/transport')
 @login_required
 @role_required(ROLE_ADMIN, ROLE_TRANSPORT, ROLE_SECURITY)
+@cache.cached(timeout=60, key_prefix=make_cache_key)
 def transport_dashboard():
     shuttles = Shuttle.query.options(db.joinedload(Shuttle.driver)).all()
     # Convert manually to avoid serialization issues in template
@@ -292,6 +296,7 @@ from app.models import Book
 @web_bp.route('/library')
 @login_required
 @role_required(ROLE_ADMIN, ROLE_LIBRARIAN, ROLE_STUDENT)
+@cache.cached(timeout=60, key_prefix=make_cache_key)
 def library_dashboard():
     books = Book.query.all()
     return render_template('library_dashboard.html', 
@@ -522,6 +527,7 @@ from app.models import CafeteriaItem, CafeteriaOrder
 @web_bp.route('/cafeteria')
 @login_required
 @role_required(ROLE_ADMIN, ROLE_CAFETERIA, ROLE_STUDENT)
+@cache.cached(timeout=60, key_prefix=make_cache_key)
 def cafeteria_dashboard():
     items = CafeteriaItem.query.all()
     # For demo, fetch recent orders
