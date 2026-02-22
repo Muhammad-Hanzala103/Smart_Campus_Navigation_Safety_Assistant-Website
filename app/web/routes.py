@@ -274,7 +274,7 @@ def faculty_dashboard():
 @login_required
 @role_required(ROLE_ADMIN, ROLE_TRANSPORT, ROLE_SECURITY)
 def transport_dashboard():
-    shuttles = Shuttle.query.all()
+    shuttles = Shuttle.query.options(db.joinedload(Shuttle.driver)).all()
     # Convert manually to avoid serialization issues in template
     shuttles_json = []
     for s in shuttles:
